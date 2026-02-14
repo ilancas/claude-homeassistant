@@ -113,6 +113,7 @@ class HAOfficialValidator:
                         "setup of platform",
                         "loading",
                         "initialized",
+                        "inotify",
                     ]
                 ):
                     continue
