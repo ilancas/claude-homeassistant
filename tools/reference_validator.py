@@ -269,6 +269,9 @@ class ReferenceValidator:
         # Extract zone entities from configuration and storage
         entities.update(self._extract_zone_entities())
 
+        # Extract device_tracker entities from known_devices.yaml
+        entities.update(self._extract_known_devices())
+
         return entities
 
     def _extract_groups(self) -> Set[str]:
@@ -532,6 +535,35 @@ class ReferenceValidator:
 
         return entities
 
+    def _extract_known_devices(self) -> Set[str]:
+        """Extract device_tracker entities from known_devices.yaml.
+
+        The device_tracker.see service creates entities dynamically at runtime
+        and persists them in known_devices.yaml rather than the entity registry.
+        See: https://www.home-assistant.io/integrations/device_tracker/
+        """
+        entities: Set[str] = set()
+        known_devices_file = self.config_dir / "known_devices.yaml"
+
+        if known_devices_file.exists():
+            try:
+                with open(known_devices_file, "r", encoding="utf-8") as f:
+                    data = yaml.load(f, Loader=HAYamlLoader)
+                    if isinstance(data, dict):
+                        for device_name, device_data in data.items():
+                            if isinstance(device_name, str) and self._is_valid_object_id(
+                                device_name
+                            ):
+                                # Only include tracked devices
+                                if isinstance(device_data, dict) and device_data.get(
+                                    "track", False
+                                ):
+                                    entities.add(f"device_tracker.{device_name}")
+            except Exception:
+                pass
+
+        return entities
+
     def is_builtin_domain(self, entity_id: str) -> bool:
         """Check if entity belongs to a built-in domain."""
         domain = entity_id.split(".")[0] if "." in entity_id else ""
@@ -641,8 +673,13 @@ class ReferenceValidator:
             for key, value in data.items():
                 if key in ["device_id", "device_ids"]:
                     if isinstance(value, str):
-                        # Skip blueprint inputs and other HA tags
-                        if not value.startswith("!") and not self.is_template(value):
+                        # Skip blueprint inputs, HA tags, templates,
+                        # and entity IDs mistakenly used as device_id
+                        if (
+                            not value.startswith("!")
+                            and not self.is_template(value)
+                            and not self._is_valid_entity_id(value)
+                        ):
                             devices.add(value)
                     elif isinstance(value, list):
                         for device in value:
@@ -650,6 +687,7 @@ class ReferenceValidator:
                                 isinstance(device, str)
                                 and not device.startswith("!")
                                 and not self.is_template(device)
+                                and not self._is_valid_entity_id(device)
                             ):
                                 devices.add(device)
                 else:
