@@ -2,6 +2,9 @@
 
 # Secrets and sensitive data
 config/secrets.yaml
+config/zigbee2mqtt/secret.yaml
+config/zigbee2mqtt/configuration.yaml
+config/esphome/secrets.yaml
 config/.storage/
 config/home-assistant.log*
 config/OZW_Log.txt
