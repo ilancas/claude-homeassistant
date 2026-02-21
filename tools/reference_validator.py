@@ -106,6 +106,20 @@ class ReferenceValidator:
     # not entity IDs. See: home-assistant.io/integrations/persistent_notification/
     BUILTIN_DOMAINS: set = set()
 
+    # Known HA entity domains — used to filter broad quoted-string pattern matches
+    # so that Jinja2 attribute paths like 'attributes.vtherm_over_climate' are not
+    # mistaken for entity IDs.
+    HA_ENTITY_DOMAINS = {
+        "alarm_control_panel", "automation", "binary_sensor", "button", "calendar",
+        "camera", "climate", "conversation", "counter", "cover", "device_tracker",
+        "event", "fan", "group", "humidifier", "image", "input_boolean",
+        "input_button", "input_datetime", "input_number", "input_select", "input_text",
+        "light", "lock", "media_player", "notify", "number", "person", "remote",
+        "scene", "script", "select", "sensor", "siren", "stt", "switch", "tag",
+        "text", "time", "timer", "todo", "tts", "update", "vacuum", "water_heater",
+        "weather", "zone",
+    }
+
     def __init__(self, config_dir: str = "config"):
         """Initialize the ReferenceValidator."""
         self.config_dir = Path(config_dir)
@@ -645,7 +659,8 @@ class ReferenceValidator:
         entities = set()
 
         # Common patterns for entity references in templates
-        patterns = [
+        # Precise patterns — match only inside known HA template functions
+        precise_patterns = [
             r"states\('([^']+)'\)",  # states('entity.id')
             r'states\("([^"]+)"\)',  # states("entity.id")
             # states.domain.entity
@@ -655,13 +670,28 @@ class ReferenceValidator:
             r"state_attr\('([^']+)'",  # state_attr('entity.id', ...)
             r'state_attr\("([^"]+)"',  # state_attr("entity.id", ...)
         ]
+        # Broad patterns — catch entity IDs in list literals and other quoted
+        # contexts (e.g. ['select.foo', 'select.bar']). Filtered to known HA
+        # entity domains to avoid false positives like 'attributes.vtherm_...'.
+        broad_patterns = [
+            r"'([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)'",
+            r'"([a-z_][a-z0-9_]*\.[a-z_][a-z0-9_]*)"',
+        ]
 
-        for pattern in patterns:
+        for pattern in precise_patterns:
             matches = re.findall(pattern, template)
             for match in matches:
                 # Validate entity ID format
                 if "." in match and len(match.split(".")) == 2:
                     entities.add(match)
+
+        for pattern in broad_patterns:
+            matches = re.findall(pattern, template)
+            for match in matches:
+                if "." in match and len(match.split(".")) == 2:
+                    domain = match.split(".")[0]
+                    if domain in self.HA_ENTITY_DOMAINS:
+                        entities.add(match)
 
         return entities
 
@@ -846,6 +876,86 @@ class ReferenceValidator:
 
         return all_valid
 
+    def validate_config_entries_templates(self) -> bool:
+        """Validate entity references in UI-created template helpers.
+
+        UI-created template helpers (Settings → Helpers → Template) are stored
+        in .storage/core.config_entries, not in YAML files. They are invisible
+        to the normal YAML validation pass, so we check them separately.
+
+        Note: core.config_entries contains live credentials and is gitignored.
+        This validator reads it locally but never writes or commits it.
+        """
+        config_entries_file = self.storage_dir / "core.config_entries"
+        if not config_entries_file.exists():
+            self.warnings.append(
+                "core.config_entries not found — skipping UI template validation"
+            )
+            return True
+
+        try:
+            with open(config_entries_file, "r", encoding="utf-8") as f:
+                data = json.load(f)
+        except Exception as e:
+            self.warnings.append(f"core.config_entries: Failed to load — {e}")
+            return True
+
+        entries = data.get("data", {}).get("entries", [])
+        template_entries = [e for e in entries if e.get("domain") == "template"]
+
+        if not template_entries:
+            return True
+
+        entities = self.load_entity_registry()
+        config_entities = self.get_config_defined_entities()
+        restore_entities = self.load_restore_state_entities()
+
+        all_valid = True
+
+        for entry in template_entries:
+            title = entry.get("title") or entry.get("entry_id", "unknown")
+            options = entry.get("options", {})
+
+            for field in ["state", "availability"]:
+                template = options.get(field)
+                if not isinstance(template, str):
+                    continue
+
+                entity_refs = self.extract_entities_from_template(template)
+
+                for entity_id in entity_refs:
+                    if not self._is_valid_entity_id(entity_id):
+                        continue
+
+                    if entity_id in self.BUILTIN_ENTITIES:
+                        continue
+
+                    if entity_id in entities:
+                        if entities[entity_id].get("disabled_by") is not None:
+                            self.warnings.append(
+                                f"core.config_entries '{title}' ({field}): "
+                                f"References disabled entity '{entity_id}'"
+                            )
+                        continue
+
+                    if entity_id in config_entities:
+                        continue
+
+                    if entity_id in restore_entities:
+                        self.warnings.append(
+                            f"core.config_entries '{title}' ({field}): "
+                            f"Entity '{entity_id}' not in registry but found "
+                            "in restore state"
+                        )
+
+                    self.errors.append(
+                        f"core.config_entries '{title}' ({field}): "
+                        f"Unknown entity '{entity_id}'"
+                    )
+                    all_valid = False
+
+        return all_valid
+
     def get_yaml_files(self) -> List[Path]:
         """Get all YAML files to validate."""
         yaml_files: List[Path] = []
@@ -871,6 +981,9 @@ class ReferenceValidator:
         for file_path in yaml_files:
             if not self.validate_file_references(file_path):
                 all_valid = False
+
+        if not self.validate_config_entries_templates():
+            all_valid = False
 
         return all_valid
 
