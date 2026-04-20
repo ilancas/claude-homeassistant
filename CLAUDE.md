@@ -111,48 +111,12 @@ This project includes comprehensive validation to prevent invalid configurations
 - **Pre-Push Hook**: Validates configuration before pushing to Home Assistant
 - **Blocks invalid pushes**: Prevents uploading broken configurations
 
-## Home Assistant Instance Details
+## Operational Notes
 
-- **Host**: Configure in Makefile `HA_HOST` variable
-- **User**: Configure SSH access as needed
-- **SSH Key**: Configure SSH key authentication
-- **Config Path**: /config/ (standard HA path)
-- **Version**: Compatible with Home Assistant Core 2024.x+
-
-## Entity Registry
-
-The system tracks entities across these domains:
-- alarm_control_panel, binary_sensor, button, camera, climate
-- device_tracker, event, image, light, lock, media_player
-- number, person, scene, select, sensor, siren, switch
-- time, tts, update, vacuum, water_heater, weather, zone
-
-## Development Workflow
-
-1. **Pull Latest**: `make pull` to sync from HA
-2. **Edit Locally**: Modify files in `config/` directory
-3. **Auto-Validation**: Hooks automatically validate on edits
-4. **Test Changes**: `make validate` for full test suite
-5. **Deploy**: `make push` to upload (blocked if validation fails)
-
-## Key Features
-
-- ✅ **Safe Deployments**: Pre-push validation prevents broken configs
-- ✅ **Entity Validation**: Ensures all references point to real entities
-- ✅ **Entity Discovery**: Advanced tools to explore and search available entities
-- ✅ **Official HA Tools**: Uses Home Assistant's own validation
-- ✅ **YAML Support**: Handles HA-specific tags (!include, !secret, !input)
-- ✅ **Comprehensive Testing**: Multiple validation layers
-- ✅ **Automated Hooks**: Validation runs automatically on file changes
-
-## Important Notes
-
-- **Never push without validation**: The hooks prevent this, but be aware
-- **Blueprint files** use `!input` tags which are normal and expected
-- **Secrets are skipped** during validation for security
-- **SSH access required** for pull/push operations
-- **Python venv required** for validation tools
-- All python tools need to be run with `source venv/bin/activate && python <tool_path>`
+- HA connection details configured in `Makefile` (`HA_HOST` variable) and `~/.ssh/config`
+- All python tools must be run with `source venv/bin/activate && python <tool_path>`
+- Blueprint files use `!input` tags — normal and expected
+- Secrets are skipped during validation
 
 ## Troubleshooting
 
@@ -170,15 +134,6 @@ The system tracks entities across these domains:
 ### Missing Dependencies
 1. Activate venv: `source venv/bin/activate`
 2. Install requirements: `pip install homeassistant voluptuous pyyaml`
-
-## Security
-
-- **SSH keys** are used for secure access
-- **Secrets.yaml** is excluded from validation (contains sensitive data)
-- **No credentials** are stored in this repository
-- **Access tokens** in config are for authorized integrations
-
-This system ensures you can confidently manage Home Assistant configurations with Claude while maintaining safety and reliability.
 
 ## Entity Naming Convention
 
