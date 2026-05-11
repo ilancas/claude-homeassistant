@@ -1,0 +1,42 @@
+
+# Loads default set of integrations. Do not remove.
+default_config:
+
+# Load frontend themes from the themes folder
+frontend:
+  themes: !include_dir_merge_named themes
+  
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+# configuration.yaml entry with manually specified Sonos IP addresses
+wake_on_lan:
+switch:
+  - platform: wake_on_lan
+    mac: "00:11:32:7b:c0:79"  # Replace with your device's MAC address
+    name: "Synology"     # Replace with a descriptive name for your device
+bluetooth:
+
+template: !include sensors.yaml
+
+logbook:
+  exclude:
+    entity_globs:
+      - sensor.*_versatile_thermostat_last_temperature_date
+    entities:
+      - camera.dreamy_map
+
+recorder:
+  exclude:
+    entity_globs:
+      - sensor.*_versatile_thermostat_last_temperature_date
+      
+homeassistant:
+  customize:
+    sensor.tuya_pm10_sonos_1_kwh:
+      device_class: energy
+      state_class: total_increasing
+    sensor.tuya_pm11_dreame_kwh:
+      device_class: energy
+      state_class: total_increasing
+

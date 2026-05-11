@@ -1,0 +1,3886 @@
+- id: '1742824898690'
+  alias: Wakeup time
+  description: ''
+  triggers:
+  - trigger: time
+    at: input_datetime.morning_alarm
+  conditions:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state: 'off'
+  actions:
+  - action: script.play_radio_5_live_on_bedroom_sonos_3
+    metadata: {}
+    data: {}
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.plugs_off_overnight
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - input_boolean.night_lights_mode
+      - input_boolean.bedroom_light_bypass
+  mode: single
+- id: '1742831936958'
+  alias: Snug Sonoff TRVZB External Temperature Sensor Calibration
+  description: ''
+  use_blueprint:
+    path: photomoose/sonoff-trvzb-external-temperature-sensor-calibration.yaml
+    input:
+      external_temperature_sensor: sensor.snug_sensor_temperature
+      trv_external_temperature_input:
+      - number.snug_radiator_external_temperature_input
+- id: '1743006476716'
+  alias: Power up TV
+  description: ''
+  triggers:
+  - trigger: time
+    at: '16:00:00'
+  conditions:
+  - condition: or
+    conditions:
+    - condition: state
+      state: home
+      entity_id: device_tracker.ian_tracker
+    - condition: state
+      entity_id: device_tracker.liz_tracker
+      state: home
+  - condition: state
+    entity_id: switch.tapo_pm1_lounge_tv
+    state: 'off'
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state:
+    - 'off'
+  actions:
+  - type: turn_on
+    device_id: dd0f4495583d90b48ab9e14f7fc374c3
+    entity_id: 84621cfb44e3a155f4a1a2f1e75daffb
+    domain: switch
+  mode: single
+- id: '1743170085266'
+  alias: Study Sonoff TRVZB External Temperature Sensor Calibration
+  description: ''
+  use_blueprint:
+    path: photomoose/sonoff-trvzb-external-temperature-sensor-calibration.yaml
+    input:
+      external_temperature_sensor: sensor.study_temperature_sensor_temperature
+      trv_external_temperature_input:
+      - number.study_radiator_external_temperature_input
+- id: '1743285200859'
+  alias: Snug Main Light auto-OFF if unoccupied
+  description: ''
+  use_blueprint:
+    path: Blackshome/manual-light.yaml
+    input:
+      trigger_input:
+      - switch.snug_main_light_relay
+      motion_trigger: binary_sensor.snug_presence_sensor_occupancy
+      include_motion_trigger: enable_motion_trigger
+      time_delay:
+        hours: 0
+        minutes: 5
+        seconds: 0
+      include_trigger_sync: disable_trigger_sync
+      include_timer_helper: disable_timer_helper
+      include_grace_period: enable_grace_period
+      include_bypass:
+      - bypass_enabled_turn_off
+      bypass_lights_stop: []
+      grace_period_timer_helper: timer.sung_main_light_grace_helper
+      grace_period_time_delay:
+        hours: 0
+        minutes: 20
+        seconds: 0
+      timer_helper: timer.snug_main_light_timer
+      bypass_lights_off:
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1744303850098'
+  alias: Holiday Mode to ON if house unoccupied for 24 hours
+  description: Triggers an action 24 hours after the house becomes empty
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.occupied
+    to:
+    - 'off'
+    for:
+      hours: 24
+      minutes: 0
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state: 'off'
+  actions:
+  - target:
+      entity_id: input_boolean.holiday_mode
+    action: input_boolean.turn_on
+    data: {}
+  mode: restart
+- id: '1744366553512'
+  alias: Landing Light motion activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.stair_light_motion_sensor_occupancy
+      light_switch:
+        entity_id: light.landing_light
+      time_delay: 1
+      light_transition_on: 0
+      include_light_control:
+      - use_transition
+      - use_brightness
+      light_brightness: 40
+      include_sun: sun_enabled
+      zone: zone.home
+      include_device_tracker: zone_enabled
+      sun_elevation: 5
+      light_transition_off: 2
+      dynamic_lighting_dead_zone: 5
+      dynamic_lighting_max_brightness: 40
+      dynamic_lighting_min_brightness: 10
+      dynamic_lighting_heartbeat: 5
+      dynamic_lighting_min_colour_temp: 2500
+      sun_elevation_rising: 0
+      include_bypass:
+      - bypass_enabled_stop
+      motion_bypass_lights_stop:
+      - input_boolean.landing_light_on_bypass
+      include_night_lights: night_lights_enabled
+      night_lights_conditions:
+      - entity_state_enabled
+      night_lights_entity_state:
+      - input_boolean.night_lights_mode
+      night_glow_light_brightness: 1
+      include_night_glow_light_control:
+      - use_brightness
+      include_night_glow_light_colour_control: disable_colour_control
+      night_glow_light_colour_temperature: 2500
+      include_night_glow: night_glow_enabled
+      night_glow_light_transition_on: 2
+      night_light_brightness: 5
+      night_light_transition_on: 0
+      night_light_transition_off: 2
+      include_night_light_colour_control: disable_colour_control
+      night_light_colour_temperature: 2500
+      night_glow_light_transition_off: 5
+      dynamic_lighting_state_control_activation_state: 'off'
+      include_light_colour_control: disable_colour_control
+      motion_bypass_lights_on: []
+      include_bypass_auto_off: []
+      bypass_auto_off_delay: 1
+      night_lights_after_time: 00:00:00
+      include_night_light_control:
+      - use_brightness
+      - if_lights_are_on_adjust_when_crossing_over
+      - use_transition
+      night_time_delay: 5
+      night_lights:
+        entity_id: light.landing_stairs_lights
+      night_lights_before_time: 00:00:00
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      include_state_control: state_control_enabled
+      night_glow_lights:
+        entity_id: light.landing_light
+      include_ambient: ambient_disabled
+      ambient_light_sensor: sensor.everything_presence_lite_c23424_illuminance
+      ambient_light_options: ambient_light_option_enabled
+      ambient_light_value: 3
+      ambient_light_high_value: 620
+- id: '1744905213374'
+  alias: Deactivate Holiday Mode when House is Occupied
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.occupied
+    from: 'off'
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  conditions:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state: 'on'
+    enabled: true
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.holiday_mode
+  mode: single
+- id: '1745145602340'
+  alias: Dining Ceiling Light - Toggle light and OFF bypass via wall switch
+  description: 'If relay is off, power on relay (always on except after power cut)
+    and switch on the light.
+
+    If relay already on (normal), toggle the light >> if then OFF, set the light OFF
+    bypass or if then ON, turn off the light OFF bypass so the light stays on.'
+  triggers:
+  - domain: mqtt
+    device_id: f7c0aa89b7d4f6af6b325f42cfa723f0
+    type: action
+    subtype: toggle
+    metadata: {}
+    trigger: device
+  conditions: []
+  actions:
+  - if:
+    - condition: state
+      entity_id: switch.dining_light_relay
+      state: 'off'
+    then:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.dining_light_relay
+      enabled: true
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+      alias: Delay 5s to allow smart bulb to initialise
+    - action: light.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: light.dining_ceiling_light
+    - action: input_boolean.turn_off
+      target:
+        entity_id:
+        - input_boolean.dining_light_off_bypass
+      data: {}
+      alias: 'Perform action ''Input boolean: Turn off'' on Dining Light OFF bypass
+        (lights back to automatic)'
+    else:
+    - action: light.toggle
+      metadata: {}
+      data: {}
+      target:
+        entity_id: light.dining_ceiling_light
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+    - if:
+      - condition: state
+        entity_id: light.dining_ceiling_light
+        state: 'off'
+        alias: If light has just been turned OFF, keep it off.  If turned ON, set
+          to PIR mode
+      then:
+      - action: input_boolean.turn_on
+        target:
+          entity_id:
+          - input_boolean.dining_light_off_bypass
+        data: {}
+        alias: 'Perform action ''Input boolean: Turn ON'' Dining Light off bypass
+          (keep light OFF)'
+      else:
+      - action: input_boolean.turn_off
+        target:
+          entity_id:
+          - input_boolean.dining_light_off_bypass
+        data: {}
+        alias: 'Perform action ''Input boolean: Turn OFF'' Dining Light OFF bypass
+          (lights back to PIR)'
+      - delay:
+          hours: 0
+          minutes: 2
+          seconds: 0
+          milliseconds: 0
+      - if:
+        - condition: state
+          entity_id: light.dining_ceiling_light
+          state:
+          - 'on'
+        - condition: state
+          entity_id: binary_sensor.dining_room_combined_presence_sensor
+          state:
+          - 'off'
+        then:
+        - action: light.turn_off
+          metadata: {}
+          target:
+            entity_id: light.dining_ceiling_light
+          data:
+            transition: 5
+  mode: restart
+- id: '1745249240796'
+  alias: Heating - set schedule (Summer/Winter) if at home
+  description: ''
+  triggers:
+  - at:
+      entity_id: input_datetime.morning_alarm
+      offset: -00:30:00
+    trigger: time
+  conditions:
+  - condition: state
+    entity_id: input_boolean.holiday_mode
+    state:
+    - 'off'
+  actions:
+  - if:
+    - condition: template
+      value_template: "{% set start_date = states('input_datetime.summer') %}\n  {%
+        set end_date = states('input_datetime.winter') %}\n{% set start_month = start_date[5:7]|int
+        %}\n{% set start_day = start_date[8:10]|int %}\n{% set end_month = end_date[5:7]|int
+        %}\n{% set end_day = end_date[8:10]|int %}\n{% set current_month = now().month
+        %}\n{% set current_day = now().day %}\n\n{% set start_ordinal = start_month
+        * 100 + start_day %}\n{% set end_ordinal = end_month * 100 + end_day %}\n{%
+        set current_ordinal = current_month * 100 + current_day %}\n\n{% if start_ordinal
+        <= end_ordinal %}\n  {# Normal case: date range doesn't cross year boundary
+        #}\n  {{ current_ordinal >= start_ordinal and current_ordinal < end_ordinal
+        }}\n{% else %}\n  {# Date range crosses year boundary (e.g., Dec 15 to Jan
+        15) #}\n  {{ current_ordinal >= start_ordinal or current_ordinal < end_ordinal
+        }}\n{% endif %}"
+    - condition: numeric_state
+      entity_id: sensor.outside_temperature
+      above: 7
+    then:
+    - action: input_select.select_option
+      metadata: {}
+      data:
+        option: Summer
+      target:
+        entity_id: input_select.season
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 15
+        milliseconds: 0
+    - action: input_boolean.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.heating_system_on
+    - type: turn_off
+      device_id: 76d7978d8d29c87fc982b0ada8eb6a01
+      entity_id: 9c3f4a456d8eae3bfed52bd9a5e3aa75
+      domain: fan
+    - delay:
+        hours: 0
+        minutes: 1
+        seconds: 0
+        milliseconds: 0
+    - action: select.select_option
+      metadata: {}
+      data:
+        option: Stopped
+      target:
+        entity_id: select.central_mode
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.tapo_pm11_dehumidifier
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.bedroom_fan_plug
+    else:
+    - action: input_select.select_option
+      metadata: {}
+      data:
+        option: Winter
+      target:
+        entity_id: input_select.season
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 15
+        milliseconds: 0
+    - action: input_boolean.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.heating_system_on
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.tapo_pm11_dehumidifier
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.tower_fan_power_switch
+    - delay:
+        hours: 0
+        minutes: 1
+        seconds: 0
+        milliseconds: 0
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.bedroom_fan_plug
+    - action: humidifier.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: humidifier.arete_r_two_12l_dehumidifier_air_purifier
+  mode: single
+- id: '1745258190805'
+  alias: Heating - when switch changes state, activate/deactivate system
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.heating_system_on
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.heating_system_on
+        state: 'on'
+      sequence:
+      - action: script.heating_on
+        metadata: {}
+        data: {}
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.heating_system_on
+        state: 'off'
+      sequence:
+      - action: script.turn_off_heating
+        metadata: {}
+        data: {}
+  mode: single
+- id: '1745431360821'
+  alias: On Home Assistant boot up
+  description: ''
+  triggers:
+  - trigger: homeassistant
+    event: start
+  conditions: []
+  actions:
+  - delay:
+      hours: 0
+      minutes: 2
+      seconds: 0
+      milliseconds: 0
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - light.dining_lamp
+      - light.snug_main_light_relay
+  mode: single
+- id: '1745509675175'
+  alias: Dining Sonoff TRVZB External Temperature Sensor Calibration
+  description: ''
+  use_blueprint:
+    path: photomoose/sonoff-trvzb-external-temperature-sensor-calibration.yaml
+    input:
+      external_temperature_sensor: sensor.dining_temperature_sensor_temperature
+      trv_external_temperature_input:
+      - number.dining_radiator_external_temperature_input
+- id: '1746280329940'
+  alias: Ian is at home combined device tracker
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.ian_combined_presence_sensor
+    trigger: state
+  - trigger: homeassistant
+    event: start
+  conditions: []
+  actions:
+  - data:
+      dev_id: ian_tracker
+      location_name: "{% if is_state('binary_sensor.ian_combined_presence_sensor',
+        'on') %}\n  home\n{% else %}\n  not_home\n{% endif %}\n"
+      source_type: router
+    action: device_tracker.see
+  mode: single
+- id: '1746298714045'
+  alias: Liz is at home combined device tracker
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.liz_combined_presence_sensor
+    trigger: state
+  - trigger: homeassistant
+    event: start
+  conditions: []
+  actions:
+  - data:
+      dev_id: liz_tracker
+      location_name: "{% if is_state('binary_sensor.liz_combined_presence_sensor',
+        'on') %}\n  home\n{% else %}\n  not_home\n{% endif %}\n"
+      source_type: router
+    action: device_tracker.see
+  mode: single
+- id: '1746873006027'
+  alias: Dehumidifier ON if humidity > 57% for 30m in winter
+  description: ''
+  triggers:
+  - trigger: numeric_state
+    entity_id:
+    - sensor.snug_sensor_humidity
+    - sensor.meter_pro_co2_c0d6_humidity
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
+    above: 57
+  conditions:
+  - condition: state
+    entity_id: input_select.season
+    state: Winter
+    enabled: true
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.tapo_pm11_dehumidifier
+    continue_on_error: true
+  - delay:
+      hours: 0
+      minutes: 10
+      seconds: 0
+      milliseconds: 0
+  - type: turn_on
+    device_id: 76d7978d8d29c87fc982b0ada8eb6a01
+    entity_id: 9c3f4a456d8eae3bfed52bd9a5e3aa75
+    domain: fan
+  mode: single
+- id: '1746880536077'
+  alias: Dehumidifier OFF if humidity < 55% for 1hr
+  description: ''
+  triggers:
+  - type: humidity
+    device_id: 76d7978d8d29c87fc982b0ada8eb6a01
+    entity_id: b0c00b2e8adb839c9a454c14ff323a7d
+    domain: sensor
+    trigger: device
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    below: 50
+  - trigger: numeric_state
+    entity_id:
+    - sensor.snug_sensor_humidity
+    - sensor.meter_pro_co2_c0d6_humidity
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    below: 55
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: 76d7978d8d29c87fc982b0ada8eb6a01
+    entity_id: 9c3f4a456d8eae3bfed52bd9a5e3aa75
+    domain: fan
+  mode: single
+- id: '1746978411166'
+  alias: Doors/windows left open when away or going to bed
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.occupied
+    to:
+    - 'off'
+    from:
+    - 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 10
+  conditions: []
+  actions:
+  - if:
+    - condition: state
+      entity_id: binary_sensor.master_garage_door
+      state:
+      - 'on'
+      for:
+        hours: 0
+        minutes: 1
+        seconds: 0
+    then:
+    - action: notify.mobile_app_pixel_7a
+      metadata: {}
+      data:
+        message: Garage door is still open!
+    - action: notify.mobile_app_pixel_7a
+      metadata: {}
+      data:
+        message: TTS
+        title: Alert
+        data:
+          ttl: 0
+          priority: high
+          media_stream: alarm_stream_max
+          tts_text: The garage door is still open!
+    - action: notify.mobile_app_pixel_9_pro_xl
+      metadata: {}
+      data:
+        message: Garage door is still open!
+        title: 'Alert: '
+    - action: notify.mobile_app_pixel_9_pro_xl
+      metadata: {}
+      data:
+        message: TTS
+        data:
+          ttl: 0
+          priority: high
+          media_stream: alarm_stream_max
+          tts_text: The garage door is still open!
+        title: 'Alert: '
+    - action: script.unified_tts_announcement_ma_sonos_native
+      data:
+        message: Don't go to sleep yet. The garage door is still open!
+        announcement_volume: 0.8
+        target_players:
+          entity_id:
+          - media_player.sonos_bedroom
+          - media_player.lounge
+          - media_player.kitchen
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id:
+        - notify.echo_kitchen_announce
+        - notify.echo_snug_announce
+      data:
+        message: Don't go to sleep yet. The garage door is still open!
+  - if:
+    - condition: state
+      entity_id: binary_sensor.patio_door_contact
+      state: 'on'
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      metadata: {}
+      data:
+        message: Patio door is still open!
+    - action: notify.mobile_app_pixel_9_pro_xl
+      metadata: {}
+      data:
+        message: TTS
+        data:
+          ttl: 0
+          priority: high
+          media_stream: alarm_stream_max
+          tts_text: The patio door is still open!
+        title: 'Alert: '
+    - action: notify.mobile_app_pixel_7a
+      metadata: {}
+      data:
+        message: Patio door is still open!
+    - action: notify.mobile_app_pixel_7a
+      metadata: {}
+      data:
+        message: TTS
+        title: Alert
+        data:
+          ttl: 0
+          priority: high
+          media_stream: alarm_stream_max
+          tts_text: The patio door is still open!
+    - action: script.unified_tts_announcement_ma_sonos_native
+      data:
+        message: Don't go to sleep yet. The patio door is still open!
+        announcement_volume: 0.8
+        target_players:
+          entity_id:
+          - media_player.sonos_bedroom
+          - media_player.lounge
+          - media_player.kitchen
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id:
+        - notify.echo_kitchen_announce
+        - notify.echo_snug_announce
+      data:
+        message: Don't go to sleep yet. The patio door is still open!
+  - if:
+    - condition: state
+      entity_id: binary_sensor.study_window_contact
+      state: 'on'
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      metadata: {}
+      data:
+        message: Study window is still open!
+        title: Alert!
+    - action: notify.mobile_app_pixel_7a
+      metadata: {}
+      data:
+        message: TTS
+        title: Alert
+        data:
+          ttl: 0
+          priority: high
+          media_stream: alarm_stream_max
+          tts_text: The study window is still open!
+    - action: script.unified_tts_announcement_ma_sonos_native
+      data:
+        message: Don't go to sleep yet. The study window is still open!
+        announcement_volume: 0.8
+        target_players:
+          entity_id:
+          - media_player.sonos_bedroom
+          - media_player.lounge
+          - media_player.kitchen
+    - action: notify.send_message
+      metadata: {}
+      target:
+        entity_id:
+        - notify.echo_kitchen_announce
+        - notify.echo_snug_announce
+      data:
+        message: Don't go to sleep yet. The study window is still open!
+  mode: single
+- id: '1747654606617'
+  alias: Bedroom Fan control
+  description: Turn on bedroom fan at 21:30 if temperature is above 21 degrees (house
+    occupied, summer only).
+  triggers:
+  - trigger: time_pattern
+    hours: '21'
+    minutes: '15'
+    seconds: '00'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.occupied
+    state: 'on'
+  - condition: state
+    entity_id: input_select.season
+    state: Summer
+  - condition: numeric_state
+    entity_id: sensor.meter_pro_co2_c0d6_temperature
+    above: 21
+  actions:
+  - action: switch.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.tower_fan_power_switch
+  - action: button.press
+    metadata: {}
+    data: {}
+    target:
+      entity_id: button.tower_fan_activate_mode_auto
+  mode: single
+- id: '1747656627546'
+  alias: Low Battery Notifications & Actions
+  description: ''
+  use_blueprint:
+    path: Blackshome/low-battery-notifications-and-actions.yaml
+    input:
+      include_time: time_enabled
+      weekday_options:
+      - mon
+      - tue
+      - wed
+      - thu
+      - fri
+      - sat
+      - sun
+      time: '13:15:00'
+      include_persistent_notification: enable_persistent_notification
+      global_conditions:
+      - condition: state
+        entity_id: input_boolean.holiday_mode
+        state: 'off'
+        for:
+          hours: 1
+          minutes: 0
+          seconds: 0
+      exclude_sensors:
+        entity_id:
+        - sensor.sonos_roam_battery
+      custom_group_battery_level: 35
+- id: '1749581961662'
+  alias: Hall light on at sunset; night lights after 'Goodnight' till 'Wakeup time'
+  description: ''
+  use_blueprint:
+    path: Blackshome/smart-light.yaml
+    input:
+      include_time: []
+      sun_elevation: 5
+      include_sun:
+      - sun_falling
+      - sun_rising
+      include_bypass_auto_off: []
+      bypass_lights_stop: []
+      include_bypass: []
+      include_light_control:
+      - use_brightness
+      light_brightness: 60
+      night_lights_entity_state:
+      - input_boolean.night_lights_mode
+      include_night_lights: night_lights_enabled
+      night_lights_conditions:
+      - entity_state_enabled
+      include_night_light_control:
+      - use_brightness
+      - if_lights_are_on_adjust_when_crossing_over
+      - use_transition
+      night_light_brightness: 1
+      night_lights_sun_elevation_rising: -3
+      sun_elevation_rising: -3
+      night_lights:
+        entity_id: light.hall_light
+      include_ambient: []
+      ambient_light_value: 2.5
+      ambient_light_value_off: 60
+      ambient_light_sensor: sensor.everything_presence_lite_c23424_illuminance
+      bypass_lights_off: []
+      light_switch:
+        entity_id: light.hall_light
+- id: '1750513746921'
+  alias: Group Lounge Sonos to Kitchen if Lounge or Study occupied
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.study_presence_sensor_occupancy
+    - binary_sensor.everything_presence_lite_c23424_occupancy
+    from:
+    - 'off'
+    to:
+    - 'on'
+    id: t1
+    trigger: state
+  - entity_id:
+    - binary_sensor.study_presence_sensor_occupancy
+    - binary_sensor.everything_presence_lite_c23424_occupancy
+    from:
+    - 'on'
+    to:
+    - 'off'
+    id: t2
+    trigger: state
+  - entity_id: media_player.kitchen
+    to: playing
+    id: t3
+    trigger: state
+  - event: start
+    id: t4
+    trigger: homeassistant
+  - event_type: automation_reloaded
+    id: t5
+    trigger: event
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: media_player.kitchen
+      state: playing
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: media_player.lounge
+        state: paused
+      - condition: state
+        entity_id: media_player.lounge
+        state: idle
+      - condition: template
+        value_template: '{{ sonos_target in state_attr(sonos_source, "group_members")
+          }}'
+    - condition: template
+      value_template: '{{ allow_tv or state_attr(sonos_source, "source")  != "TV"
+        }}'
+    - condition: and
+      conditions:
+      - condition: state
+        entity_id: media_player.samsung_s95ca_55
+        state: 'off'
+  actions:
+  - choose:
+    - alias: Motion has been detected - group speakers
+      conditions:
+      - condition: trigger
+        id: t1
+      sequence:
+      - alias: Add the speaker to the group
+        data:
+          group_members:
+          - media_player.lounge
+        target:
+          entity_id: media_player.kitchen
+        action: media_player.join
+    - alias: Motion has no longer been detected - unjoin after delay
+      conditions:
+      - condition: trigger
+        id: t2
+      - condition: state
+        state:
+        - 'off'
+        entity_id: binary_sensor.everything_presence_lite_c23424_occupancy
+      - condition: state
+        entity_id: binary_sensor.study_presence_sensor_occupancy
+        state: 'off'
+      sequence:
+      - alias: Wait the number of minutes set in the time delay
+        delay:
+          hours: 0
+          minutes: 1
+          seconds: 0
+          milliseconds: 0
+      - condition: state
+        entity_id: binary_sensor.patio_door_contact
+        state: 'off'
+        for:
+          hours: 0
+          minutes: 1
+          seconds: 0
+      - alias: Unjoin the speaker from the group
+        target:
+          entity_id: media_player.lounge
+        action: media_player.unjoin
+        data: {}
+  mode: restart
+  max_exceeded: silent
+  variables:
+    motion_trigger:
+    - binary_sensor.hall_presence_sensor_occupancy
+    - binary_sensor.study_presence_sensor_occupancy
+    sonos_source: media_player.kitchen
+    sonos_target: media_player.lounge
+    allow_tv: false
+    time_delay: 10
+- id: '1753014110763'
+  alias: Coffee machine tracking
+  description: ''
+  use_blueprint:
+    path: Blackshome/appliance-notifications.yaml
+    input:
+      start_time_delay: 0
+      power_sensor: sensor.tapo_pm6_coffee_current_consumption
+      start_appliance_power: 10
+      running_dead_zone: 0
+      include_custom_actions:
+      - enable_end_custom_actions
+      - enable_start_custom_actions
+      end_custom_actions:
+      - if:
+        - condition: template
+          value_template: '{{ states(''counter.coffee_machine_cycles'') | int > service_reminder_cycles
+            }}'
+        then:
+        - action: notify.mobile_app_pixel_9_pro_xl
+          metadata: {}
+          data:
+            message: ⚠️The coffee machine needs a cleaning cycle!
+        - action: input_select.select_option
+          metadata: {}
+          data:
+            option: cleaning required
+          target:
+            entity_id: input_select.coffee_machine_status
+      start_custom_actions:
+      - action: input_text.set_value
+        metadata: {}
+        data:
+          value: 00:00:00
+        target:
+          entity_id: input_text.coffee_machine_duration
+        alias: Reset coffee machine duration
+      - action: script.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: script.coffee_machine_announce_it_s_up_to_temperature
+      include_start_notify: disable_start_notify_options
+      start_notify_device: []
+      start_title: The coffee machine
+      start_message: is up to temperature
+      end_time_delay: 0
+      end_appliance_power: 4
+      run_status_entity: input_select.coffee_machine_status
+      include_run_status: run_status_enabled
+      run_status_start: heating
+      run_status_end: 'off'
+      run_status_end_reminder: cleaning required
+      include_service_reminder: enable_service_reminder
+      service_reminder_cycles: 50
+      service_reminder_counter_helper: counter.coffee_machine_cycles
+      include_time_service_reminder: disable_time_service_reminder
+      runtime_tracking_helper: input_text.coffee_machine_duration
+      include_runtime_tracking: enable_runtime_tracking
+      power_consumption_sensor: sensor.tapo_pm6_coffee_today_s_consumption
+      start_power_consumption: input_number.coffee_machine_kwh_start
+      end_power_consumption: input_number.coffee_machine_kwh_end
+      include_duration_tracking: enable_duration_tracking
+      include_end_notify: disable_end_notify_options
+      end_notify_device: []
+      end_message_title: Coffee Machine
+      end_message: Now off
+      include_watchdog: disable_watchdog
+      include_power_tracking: enable_start_end_helpers
+- id: '1753018337950'
+  alias: Offline Devices Report
+  description: ''
+  use_blueprint:
+    path: report_offline_devices.yaml
+    input:
+      enable_mobile_notifications: true
+      notify_when_no_offline_devices: false
+      exclude_entities:
+      - switch.arete_r_two_12l_dehumidifier_air_purifier_child_lock
+      - switch.403090530466020356_bsh_common_setting_powerstate
+      format_option: combined
+      mobile_notification_services: notify.mobile_app_pixel_9_pro_xl
+      time: 07:30:00
+      exclude_strings: 'dishwasher
+
+        roam
+
+        do_not_disturb
+
+        smoke
+
+        dreamy
+
+        cross
+
+        loudness
+
+        heater
+
+        meaco
+
+        fire
+
+        unused'
+- id: '1755609040406'
+  alias: Washing machine tracking
+  description: ''
+  use_blueprint:
+    path: Blackshome/appliance-notifications.yaml
+    input:
+      power_sensor: sensor.tapo_pm2_washing_machine_current_consumption
+      start_appliance_power: 2
+      end_appliance_power: 1
+      end_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      end_message: The washing machine has finished!
+      include_end_notify: enable_end_notify_options
+      include_time: time_enabled
+      after_time: 06:00:00
+      before_time: '21:30:00'
+      power_consumption_sensor: sensor.tapo_pm2_washing_machine_this_month_s_consumption
+      include_power_tracking: enable_power_tracking
+      include_duration_tracking: enable_duration_tracking
+      include_cycle_counter: enable_cycle_counter
+      include_service_reminder: enable_service_reminder
+      service_reminder_counter_helper: counter.washing_machine_service_counter
+      include_device_tracker: []
+      end_custom_actions:
+      - condition: time
+        after: 06:00:00
+        before: '21:30:00'
+      - action: script.unified_tts_announcement_ma_sonos_native
+        metadata: {}
+        data:
+          target_players:
+            device_id: caf8334fdaf279dec5de717beac23f94
+          message: The washing machine has finished its cycle
+          announcement_volume: 0.7
+      - if:
+        - condition: template
+          value_template: '{{ states(''counter.washing_machine_service_counter'')
+            | int > service_reminder_cycles }}'
+        then:
+        - action: notify.mobile_app_pixel_9_pro_xl
+          metadata: {}
+          data:
+            message: ⚠️The washing machine needs its filter cleaned
+        - action: input_select.select_option
+          metadata: {}
+          data:
+            option: Cleaning required
+          target:
+            entity_id:
+            - input_select.washing_machine_status
+        - action: notify.mobile_app_pixel_7a
+          metadata: {}
+          data:
+            message: ⚠️The washing machine needs its filter cleaned
+      include_time_service_reminder: disable_time_service_reminder
+      service_reminder_cycles: 50
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      running_dead_zone: 3
+      include_start_notify: disable_start_notify_options
+      cycle_counter_helper: counter.washing_machine_cycles
+      include_watchdog: enable_watchdog
+      watchdog_timeframe:
+        hours: 2
+        minutes: 15
+        seconds: 0
+      watchdog_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      include_custom_actions:
+      - enable_end_custom_actions
+      - enable_start_custom_actions
+      start_power_consumption: input_number.washing_machine_kwh_start
+      end_power_consumption: input_number.washing_machine_kwh_end
+      include_run_status: run_status_enabled
+      watchdog_message: Uh-oh! Time to check the washing machine (on > 2:15hrs)
+      runtime_tracking_helper: input_text.washing_machine_duration
+      include_runtime_tracking: enable_runtime_tracking
+      end_time_delay: 2
+      start_time_delay: 1
+      start_custom_actions:
+      - alias: Reset Washing machine duration
+        action: input_text.set_value
+        metadata: {}
+        data:
+          value: 00:00:00
+        target:
+          entity_id: input_text.washing_machine_duration
+      run_status_entity: input_select.washing_machine_status
+      run_status_start: Running
+      run_status_end: Not running
+- id: '1758119903403'
+  alias: Holiday & Away Lighting (Downstairs)
+  description: ''
+  use_blueprint:
+    path: Blackshome/holiday-away-lighting.yaml
+    input:
+      automation_control_entity: input_boolean.holiday_mode
+      trigger_selection: sun_elevation
+      entity_order_on: entities_on_shuffled
+      random_on_delay: 300
+      end_time_range: '22:00:00'
+      start_time_range: '20:30:00'
+      time_off_selection: earliest_latest_time_range
+      entity_1: light.lounge_lights
+      entity_1_include_light_control:
+      - use_brightness
+      entity_1_light_brightness: 60
+      entity_1_light_transition_on: 2
+      entity_2: switch.worktop_lights
+      automation_control: enable_entity_state
+- id: '1758124909588'
+  alias: Holiday & Away Lighting (Bedroom)
+  description: ''
+  use_blueprint:
+    path: Blackshome/holiday-away-lighting.yaml
+    input:
+      automation_control_entity: input_boolean.holiday_mode
+      trigger_selection: time_on
+      entity_order_on: entities_on_same_time
+      random_on_delay: 0
+      time_off_selection: min_max_on_time
+      entity_1: light.bedside_light
+      entity_1_include_light_control:
+      - use_brightness
+      entity_1_light_brightness: 50
+      entity_1_light_transition_on: 0
+      entity_2: switch.worktop_lights
+      automation_control: enable_entity_state
+      on_time_delay: 20
+      on_time: '20:50:00'
+      min_on_time:
+        hours: 0
+        minutes: 50
+        seconds: 0
+      max_on_time:
+        hours: 1
+        minutes: 30
+        seconds: 0
+      entity_1_light_transition_off: 0
+      entity_1_include_light_colour_control: use_rgb_colour
+- id: '1758125308209'
+  alias: Holiday & Away Lighting (Snug)
+  description: ''
+  use_blueprint:
+    path: Blackshome/holiday-away-lighting.yaml
+    input:
+      automation_control_entity: input_boolean.holiday_mode
+      trigger_selection: time_on
+      entity_order_on: entities_on_same_time
+      random_on_delay: 120
+      time_off_selection: earliest_latest_time_range
+      entity_1: light.snug_lamp
+      entity_1_include_light_control: []
+      entity_1_light_brightness: 100
+      entity_1_light_transition_on: 0
+      entity_2: switch.worktop_lights
+      automation_control: enable_entity_state
+      on_time_delay: 60
+      on_time: '19:00:00'
+      min_on_time:
+        hours: 0
+        minutes: 50
+        seconds: 0
+      max_on_time:
+        hours: 1
+        minutes: 30
+        seconds: 0
+      entity_1_light_transition_off: 0
+      start_time_range: '20:00:00'
+      end_time_range: '21:45:00'
+- id: '1758374832182'
+  alias: Garage Light Switch
+  description: Detached physical light switch operates as normal, whether automation
+    is on disabled.
+  triggers:
+  - domain: mqtt
+    device_id: 02ec75327fff1bfd7703d0cc1504b933
+    type: action
+    subtype: toggle
+    trigger: device
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.suspend_automation_of_lighting_current_bypass
+        state: 'off'
+      sequence:
+      - if:
+        - condition: state
+          entity_id: switch.garage_light_relay
+          state: 'on'
+          alias: If lights are on
+        then:
+        - action: switch.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: switch.garage_light_relay
+          alias: Turn lights off
+        - action: input_boolean.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: input_boolean.garage_light_on_bypass
+        else:
+        - action: input_boolean.toggle
+          metadata: {}
+          data: {}
+          target:
+            entity_id: input_boolean.garage_light_on_bypass
+    - conditions:
+      - condition: state
+        entity_id: input_boolean.suspend_automation_of_lighting_current_bypass
+        state: 'on'
+      sequence:
+      - action: switch.toggle
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.garage_light_relay
+  mode: single
+- id: '1758654292629'
+  alias: Dining Ceiling Light Motion/Presence activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.dining_room_combined_presence_sensor
+      light_switch:
+        entity_id:
+        - light.dining_ceiling_light
+      time_delay: 0
+      include_light_control:
+      - use_brightness
+      - use_transition
+      light_brightness: 100
+      include_light_colour_control: use_colour_temperature
+      light_colour_temperature: 6000
+      include_bypass:
+      - bypass_enabled_turn_off
+      - bypass_enabled_stop
+      motion_bypass_lights_off:
+      - input_boolean.dining_light_off_bypass
+      motion_bypass_lights_stop:
+      - light.dining_lamp
+      - switch.tuya_pm11_dining_cabinet
+      include_bypass_auto_off:
+      - bypass_auto_off_enabled_off
+      bypass_auto_off_delay: 240
+      light_transition_on: 0
+      include_state_control: state_control_enabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1758655400091'
+  alias: Garage Lights sensor/door activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.garage_combined_motion_sensor
+      light_switch:
+        entity_id: switch.garage_light_relay
+      include_bypass:
+      - bypass_enabled_turn_on
+      motion_bypass_lights_on:
+      - input_boolean.garage_light_on_bypass
+      - binary_sensor.master_garage_door
+      include_bypass_auto_off:
+      - bypass_auto_off_enabled_on
+      bypass_auto_off_delay: 30
+      time_delay: 3
+      motion_bypass_lights_stop: []
+      include_state_control: state_control_enabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      bypass_time_delay: 1
+- id: '1758656781423'
+  alias: Snug Lamp presence activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.snug_combined_presence_sensor
+      light_switch:
+        entity_id: switch.snug_lamp_plug
+      include_sun: sun_enabled
+      sun_elevation: 5
+      include_time: time_disabled
+      time_delay: 5
+      include_bypass: []
+      motion_bypass_lights_stop: []
+      sun_elevation_rising: -5
+      night_lights_sun_elevation_rising: -6
+      night_lights_sun_elevation: 5
+      include_state_control: state_control_enabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1758658999881'
+  alias: Worktop Lights Presence activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.kitchen_presence_sensor_occupancy
+      light_switch:
+        entity_id: switch.worktop_lights
+      time_delay: 28
+      include_bypass:
+      - bypass_enabled_turn_on
+      motion_bypass_lights_on:
+      - switch.tuya_pm11_dining_cabinet
+      - light.dining_lamp
+      include_sun: sun_enabled
+      sun_elevation: 10
+      include_time: time_enabled
+      after_time: '16:00:00'
+      before_time: '23:59:00'
+      motion_bypass_lights_stop: []
+      include_state_control: state_control_enabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1758716553558'
+  alias: Lounge Lights presence activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.everything_presence_lite_c23424_occupancy
+      light_switch:
+        entity_id:
+        - light.light_one
+        - light.light_three
+        - script.lounge_floor_light_on
+      include_light_control:
+      - use_transition
+      - use_brightness
+      light_brightness: 50
+      light_transition_on: 1
+      light_transition_off: 1
+      light_colour_temperature: 5400
+      include_light_colour_control: use_colour_temperature
+      zone: zone.home
+      people: []
+      include_device_tracker: zone_enabled
+      state_control_entity: binary_sensor.louge_lights_automation_bypass
+      include_state_control: state_control_enabled
+      dynamic_lighting_min_colour_temp: 3500
+      dynamic_lighting_min_brightness: 35
+      dynamic_lighting_max_colour_temp: 6500
+      dynamic_lighting_sun_elevation_start_falling: 7
+      dynamic_lighting_sun_elevation_end_falling: -10
+      sun_elevation: 10
+      include_sun: sun_enabled
+      dynamic_lighting_state_control: disable_state_control
+      include_bypass:
+      - bypass_enabled_stop
+      motion_bypass_lights_off: []
+      motion_bypass_lights_stop:
+      - input_boolean.movie_lights_bypass
+      motion_bypass_lights_on: []
+      bypass_auto_off_delay: 720
+      include_bypass_auto_off:
+      - bypass_auto_off_enabled_stop
+      time_delay: 10
+      dynamic_lighting_heartbeat: 2
+      dynamic_lighting_step_value: 3
+      dynamic_lighting_dead_zone: 5
+      dynamic_lighting_max_brightness: 100
+      ambient_light_sensor: sensor.everything_presence_lite_c23424_illuminance
+      ambient_light_options: ambient_light_option_disabled
+      ambient_light_high_value: 80
+      ambient_light_value: 3
+      include_ambient: ambient_enabled
+      include_time: time_disabled
+      dynamic_lighting_max_lux: 900
+      dynamic_lighting_sun_elevation_end_rising: 15
+      dynamic_lighting_state_control_activation_state: 'on'
+      sun_elevation_rising: -6
+      boolean_scenes_scripts: input_boolean.lounge_lights_toggle_helper
+      end_scenes:
+      - script.lounge_floor_lamp_off
+- id: '1758724420309'
+  alias: Lounge Lights Movie mode
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light-add-on.yaml
+    input:
+      trigger_entities:
+      - media_player.plex_plex_for_android_tv_aftgazl
+      - input_boolean.movie_mode
+      trigger_on_state:
+      - 'on'
+      - playing
+      - '1'
+      trigger_off_state:
+      - 'off'
+      - unavailable
+      automation_link:
+      - input_boolean.movie_lights_bypass
+      - input_boolean.lounge_lights_presence_bypass
+      light_switch:
+        entity_id: light.lounge_lights
+      include_light_control:
+      - use_brightness
+      - use_transition
+      light_brightness: 1
+      light_transition_on: 1
+      include_light_colour_control: disable_colour_control
+      light_colour_temperature: 2000
+      end_include_light_control:
+      - use_brightness
+      - use_transition
+      end_light_switch:
+        entity_id: light.lounge_lights
+      end_light_brightness: 35
+      end_light_transition_on: 2
+      end_include_light_colour_control: disable_colour_control
+      end_light_colour_temperature: 4000
+      include_automation_link: enable_automation_link
+      include_automation_link_time_delay: disable_time_delay
+      include_end_turn_on: enable_end_turn_on
+      time_delay: 3
+      light_transition_off: 5
+      off_light_transition_off: 0
+      include_intermission: intermission_enable
+      intermission_state:
+      - paused
+      - idle
+      intermission_light_switch:
+        entity_id: light.lounge_lights
+      intermission_light_brightness: 35
+      intermission_light_transition_on: 2
+      intermission_light_transition_off: 5
+      intermission_include_light_control:
+      - use_brightness
+      - use_transition
+      include_bypass: bypass_enabled_turn_off_automations
+      trigger_bypass: input_boolean.suspend_automation_of_lighting_current_bypass
+      ambient_light_value: 2.5
+      include_start_turn_off: disable_start_turn_off
+      off_light_switch:
+        entity_id: light.lounge_lights
+      ambient_light_high_value: 60
+      end_scenes: []
+      include_sun: sun_enabled
+      sun_elevation: -10
+      app_attribute: []
+- id: '1759658942672'
+  alias: Entity State Notification - Freezer not powered
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: numeric_state_below
+      start_trigger_numeric_entity:
+      - sensor.freezer_plug_power
+      start_time_delay_state:
+        hours: 2
+        minutes: 0
+        seconds: 0
+      start_below_state: 5
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      start_title: Freezer alert!
+      start_notify_tag: freezer
+      start_notify_data:
+      - high_priority
+      - sticky
+      end_trigger_numeric_entity:
+      - sensor.freezer_plug_power
+      end_above_state: 5
+      include_end_notify: disable_end_notify_options
+      end_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      end_title: Freezer alert!
+      end_notify_data:
+      - high_priority
+      - sticky
+      end_time_delay_state:
+        hours: 0
+        minutes: 1
+        seconds: 0
+      start_message: Freezer without power for 1.5 hrs
+      end_message: Freezer power restored
+- id: '1759659994276'
+  alias: Entity State Notification - Fridge not powered
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: numeric_state_below
+      start_trigger_numeric_entity:
+      - sensor.tapo_pm3_fridge_current_consumption
+      start_time_delay_state:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      start_below_state: 5
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      start_title: Fridge alert!
+      start_notify_tag: fridge
+      start_notify_data:
+      - high_priority
+      - sticky
+      end_trigger_numeric_entity:
+      - sensor.tapo_pm3_fridge_current_consumption
+      end_above_state: 1
+      include_end_notify: enable_end_notify_options
+      end_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      end_title: Fridge alert!
+      end_notify_data:
+      - high_priority
+      - sticky
+      end_trigger_state: numeric_state_above
+      end_time_delay_state:
+        hours: 0
+        minutes: 1
+        seconds: 0
+      start_message: Fridge without power for 1 hr
+      end_message: Fridge power restored
+- id: '1759663452894'
+  alias: Entity State Notification - Tapo device(s) offline
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: unavailable
+      start_trigger_state_entity:
+      - binary_sensor.tapo_pm1_lounge_tv_cloud_connection
+      - binary_sensor.tapo_pm3_fridge_cloud_connection
+      - binary_sensor.tapo_pm4_firecube3_cloud_connection
+      - binary_sensor.tapo_pm5_kettle_cloud_connection
+      - binary_sensor.tapo_pm6_coffee_cloud_connection
+      - binary_sensor.tapo_pm7_microwave_cloud_connection
+      - binary_sensor.tapo_pm8_router_etc_cloud_connection
+      - binary_sensor.tapo_pm9_iron_cloud_connection
+      - binary_sensor.tapo_pm10_toaster_cloud_connection
+      - binary_sensor.tapo_pm11_dehumidifier_cloud_connection
+      - binary_sensor.tapo_pm13_kitchen_echo_cloud_connection
+      - binary_sensor.tapo_pm14_dishwasher_cloud_connection
+      - binary_sensor.tapo_pm2_washing_machine_cloud_connection
+      start_time_delay_state:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      start_title: Tapo device alert!
+      start_message: '{{ states[trigger.entity_id].attributes.friendly_name }} is
+        unavailable'
+      start_notify_data:
+      - high_priority
+      end_trigger_state: 'on'
+      end_trigger_state_entity:
+      - binary_sensor.tapo_pm1_lounge_tv_cloud_connection
+      - binary_sensor.tapo_pm3_fridge_cloud_connection
+      - binary_sensor.tapo_pm4_firecube3_cloud_connection
+      - binary_sensor.tapo_pm5_kettle_cloud_connection
+      - binary_sensor.tapo_pm6_coffee_cloud_connection
+      - binary_sensor.tapo_pm7_microwave_cloud_connection
+      - binary_sensor.tapo_pm8_router_etc_cloud_connection
+      - binary_sensor.tapo_pm9_iron_cloud_connection
+      - binary_sensor.tapo_pm10_toaster_cloud_connection
+      - binary_sensor.tapo_pm11_dehumidifier_cloud_connection
+      - binary_sensor.tapo_pm12_heater_cloud_connection
+      - binary_sensor.tapo_pm13_kitchen_echo_cloud_connection
+      - binary_sensor.tapo_pm14_dishwasher_cloud_connection
+      - binary_sensor.tapo_pm2_washing_machine_cloud_connection
+      end_time_delay_state:
+        hours: 0
+        minutes: 0
+        seconds: 30
+      include_end_notify: enable_end_notify_options
+      end_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      end_title: Tapo device alert
+      end_message: '{{ states[trigger.entity_id].attributes.friendly_name }} is back
+        online'
+      end_notify_data:
+      - high_priority
+      global_conditions: []
+- id: '1759669842573'
+  alias: Entity State Notification - Garage Door is still open
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'on'
+      start_trigger_state_entity:
+      - binary_sensor.garage_door_l_contact
+      start_time_delay_state:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      start_title: 'Garage door alert:'
+      start_message: door is still open!
+      start_notify_tag: garage-door
+      start_notify_data:
+      - high_priority
+      include_start_auto_actions:
+      - enable_start_action_1
+      start_action_1:
+      - action: notify.send_message
+        metadata: {}
+        data:
+          message: The garage door has been open for 30 minutes
+        target:
+          entity_id:
+          - notify.echo_snug_announce
+          - notify.echo_kitchen_announce
+      - action: script.unified_tts_announcement_ma_sonos_native
+        data:
+          message: The garage door has been open for 30 minutes.
+          announcement_volume: 0.4
+          target_players:
+            entity_id:
+            - media_player.sonos_bedroom
+            - media_player.lounge
+            - media_player.kitchen
+      start_notify_icon_colour:
+      - 255
+      - 41
+      - 41
+- id: '1759672807859'
+  alias: Entity State Notification - Water leak in Utility Room
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'on'
+      start_trigger_state_entity:
+      - binary_sensor.utility_water_leak_water_leak
+      start_time_delay_state:
+        hours: 0
+        minutes: 0
+        seconds: 5
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      start_title: 'Alert! '
+      start_message: There is a water leak in the Utility Room!
+      start_notify_tag: utility-water-leak
+      start_notify_data:
+      - high_priority
+      - sticky
+      start_notify_icon_colour:
+      - 255
+      - 116
+      - 41
+      include_start_auto_actions:
+      - enable_start_action_1
+      - enable_start_action_2
+      start_action_1:
+      - action: notify.send_message
+        metadata: {}
+        data:
+          message: There is a water leak in the utility room!
+        target:
+          entity_id:
+          - notify.echo_kitchen_announce
+          - notify.echo_snug_announce
+      - action: script.unified_tts_announcement_ma_sonos_native
+        data:
+          message: There is a water leak in the utility room!
+          announcement_volume: 0.8
+          target_players:
+            entity_id:
+            - media_player.sonos_bedroom
+            - media_player.lounge
+            - media_player.kitchen
+      include_start_action_buttons: []
+      start_action_button_stop: Cancel automation
+      include_start_action_button_confirmation: disable_start_action_button_confirmation
+      start_action_2:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.tapo_pm2_washing_machine
+      start_time_delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+- id: '1759674156099'
+  alias: Entity State Notification - Garage Door open/close
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'on'
+      start_trigger_state_entity:
+      - binary_sensor.master_garage_door
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      start_message: Garage door is now open
+      start_notify_data:
+      - high_priority
+      include_start_auto_actions:
+      - enable_start_action_1
+      start_action_1:
+      - action: script.unified_tts_announcement_ma_sonos_native
+        metadata: {}
+        data:
+          target_players:
+            device_id: caf8334fdaf279dec5de717beac23f94
+          message: The garage door is now open
+          announcement_volume: 0.6
+      end_trigger_state: 'off'
+      end_trigger_state_entity:
+      - binary_sensor.master_garage_door
+      include_end_notify: enable_end_notify_options
+      end_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      end_title: 'Alert! '
+      end_message: The garage door is now closed
+      end_notify_data:
+      - high_priority
+      include_end_auto_actions:
+      - enable_end_action_1
+      end_action_1:
+      - action: script.unified_tts_announcement_ma_sonos_native
+        metadata: {}
+        data:
+          target_players:
+            device_id: caf8334fdaf279dec5de717beac23f94
+          message: The garage door is now closed
+          announcement_volume: 0.6
+      start_title: 'Alert! '
+      global_conditions:
+      - condition: or
+        conditions:
+        - condition: template
+          value_template: "{{ trigger is not none and trigger.id == 't1' and \n   trigger.from_state
+            is not none and trigger.from_state.state == 'off' and \n   trigger.to_state.state
+            == 'on' }}"
+        - condition: template
+          value_template: "{{ trigger is not none and trigger.id == 't5' and \n   trigger.from_state
+            is not none and trigger.from_state.state == 'on' and \n   trigger.to_state.state
+            == 'off' }}"
+- id: '1759759185033'
+  alias: State Notifications - Liz Home or Away
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'off'
+      start_trigger_state_entity:
+      - binary_sensor.liz_combined_presence_sensor
+      start_time_delay_state:
+        hours: 0
+        minutes: 1
+        seconds: 0
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      start_title: Presence
+      start_message: Liz has left the house
+      start_notify_data:
+      - high_priority
+      end_trigger_state: 'on'
+      end_trigger_state_entity:
+      - binary_sensor.liz_combined_presence_sensor
+      end_time_delay_state:
+        hours: 0
+        minutes: 0
+        seconds: 5
+      include_end_notify: enable_end_notify_options
+      end_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      end_title: Presence
+      end_message: Liz has returned home
+      end_notify_data:
+      - high_priority
+      global_conditions:
+      - condition: template
+        value_template: '{{ (as_timestamp(now()) - as_timestamp(states(''sensor.uptime'')))
+          > 180 }}'
+        alias: If HA was started at least 3m ago
+- id: '1760467433186'
+  alias: Tag Snug Lamp toggle is scanned
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: e1845d7d-cd1b-4209-b8a8-5b8e276257af
+  conditions: []
+  actions:
+  - action: switch.toggle
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.snug_lamp_plug
+  mode: single
+- id: '1760695326931'
+  alias: Washing machine cut power after water leak
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'on'
+      start_trigger_state_entity:
+      - binary_sensor.utility_water_leak_water_leak
+      start_time_delay_state:
+        hours: 0
+        minutes: 0
+        seconds: 5
+      include_start_notify: disable_start_notify_options
+      start_notify_device: []
+      start_notify_data: []
+      start_notify_icon_colour:
+      - 255
+      - 116
+      - 41
+      include_start_auto_actions: []
+      start_action_1: []
+      include_start_action_buttons:
+      - enable_start_action_button_2
+      start_action_button_stop: Cancel automation
+      include_start_action_button_confirmation: enable_start_action_button_confirmation
+      start_action_button_confirmation_title: Alert!
+      start_action_button_stop_confirmation_message: Water leak alarm cancelled
+      start_time_delay_confirmation_message: Water leak time delay for action has
+        expired
+      start_action_button_2: Cut washing machine power?
+      start_action_2:
+      - action: switch.turn_off
+        metadata: {}
+        data: {}
+        target:
+          entity_id: switch.tapo_pm2_washing_machine
+      start_action_button_2_confirmation_message: Washing machine power has been cut
+      start_time_delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+- id: '1760873803797'
+  alias: Tag Coffee Machine cycles reset
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: 688d6021-6854-4b7b-b212-29c344032f05
+  conditions: []
+  actions:
+  - target:
+      entity_id: counter.coffee_machine_cycles
+    action: counter.reset
+  mode: single
+- id: '1760875394778'
+  alias: Tag Dishwasher cleaning cycle reset
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: a8ab16b5-3b42-4d89-b93d-ed64277e2cc2
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - counter.dishwasher_service_reminder
+    action: counter.reset
+    data: {}
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: 00:00:00
+    target:
+      entity_id: input_text.dishwasher_duration
+  - action: input_select.select_option
+    metadata: {}
+    target:
+      entity_id: input_select.dishwasher_status
+    data:
+      option: Not running
+  mode: single
+- id: '1760876100402'
+  alias: Tag Washing machine service counter reset
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: b3dc7e2d-b834-40a4-af65-bd0dd44fb64a
+  conditions: []
+  actions:
+  - target:
+      entity_id:
+      - counter.washing_machine_service_counter
+    action: counter.reset
+    data: {}
+  - action: input_text.set_value
+    metadata: {}
+    data:
+      value: 00:00:00
+    target:
+      entity_id: input_text.washing_machine_duration
+  mode: single
+- id: '1760880122015'
+  alias: Study Button
+  description: ''
+  triggers:
+  - domain: mqtt
+    device_id: 7928da3d8c7b0a4778eabc27d9992643
+    type: action
+    subtype: single
+    trigger: device
+    enabled: true
+    id: single
+  - domain: mqtt
+    device_id: 7928da3d8c7b0a4778eabc27d9992643
+    type: action
+    subtype: hold
+    trigger: device
+    enabled: false
+    id: hold
+  - domain: mqtt
+    device_id: 7928da3d8c7b0a4778eabc27d9992643
+    type: action
+    subtype: double
+    trigger: device
+    id: double
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - single
+      sequence:
+      - action: light.toggle
+        metadata: {}
+        data:
+          brightness_pct: 100
+        target:
+          entity_id: light.study_light
+        enabled: true
+    - conditions:
+      - condition: trigger
+        id:
+        - double
+      sequence:
+      - action: light.toggle
+        metadata: {}
+        data:
+          brightness_pct: 50
+        target:
+          entity_id: light.study_light
+        enabled: true
+  mode: single
+- id: '1761149007607'
+  alias: Snug Oil Heater ON
+  description: If VT is off then turn it on if Snug occupied
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.tapo_pm12_heater
+    from: 'off'
+    to: 'on'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 5
+  conditions:
+  - condition: state
+    entity_id: climate.snug_heater_versatile_thermostat
+    attribute: hvac_mode
+    state: 'off'
+  - condition: state
+    entity_id: binary_sensor.snug_presence_sensor_occupancy
+    state: 'on'
+  actions:
+  - action: climate.set_preset_mode
+    metadata: {}
+    data:
+      preset_mode: activity
+    target:
+      entity_id: climate.snug_heater_versatile_thermostat
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: heat
+    target:
+      entity_id: climate.snug_heater_versatile_thermostat
+  - condition: state
+    entity_id: binary_sensor.liz_combined_presence_sensor
+    state: 'off'
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.heating_system_on
+    enabled: false
+  mode: single
+- id: '1761162698910'
+  alias: Tag Oil Heater toggle
+  description: ''
+  triggers:
+  - trigger: tag
+    tag_id: 6d4b314b-8377-4997-a386-63475bbe9328
+  conditions: []
+  actions:
+  - if:
+    - condition: state
+      entity_id: climate.snug_heater_versatile_thermostat
+      attribute: hvac_mode
+      state: 'off'
+    then:
+    - action: automation.trigger
+      metadata: {}
+      data:
+        skip_condition: true
+      target:
+        entity_id: automation.snug_oil_heater_on
+    else:
+    - action: script.snug_oil_heater_turn_off
+      metadata: {}
+      data: {}
+  mode: single
+- id: '1761232180514'
+  alias: Study Light Motion/Presence activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.study_combined_sensor
+      light_switch:
+        entity_id: light.study_light
+      time_delay: 2
+      include_light_control:
+      - use_transition
+      light_transition_on: 0
+      include_state_control: state_control_enabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      include_sun: sun_enabled
+      sun_elevation: 5
+      sun_elevation_rising: 0
+      motion_bypass_lights_stop:
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+      include_bypass:
+      - bypass_enabled_stop
+- id: '1761927394423'
+  alias: Stairs Light motion activation
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.stair_light_motion_sensor_occupancy
+      light_switch:
+        entity_id: light.stairs_light
+      time_delay: 1
+      light_transition_on: 0
+      include_light_control:
+      - use_transition
+      - use_brightness
+      light_brightness: 30
+      include_sun: sun_enabled
+      zone: zone.home
+      include_device_tracker: zone_enabled
+      sun_elevation: 5
+      light_transition_off: 2
+      dynamic_lighting_dead_zone: 5
+      dynamic_lighting_max_brightness: 40
+      dynamic_lighting_min_brightness: 10
+      dynamic_lighting_heartbeat: 5
+      dynamic_lighting_min_colour_temp: 2500
+      sun_elevation_rising: 0
+      include_bypass:
+      - bypass_enabled_turn_off
+      - bypass_enabled_stop
+      motion_bypass_lights_stop:
+      - input_boolean.landing_light_on_bypass
+      include_night_lights: night_lights_disabled
+      night_lights_conditions: []
+      night_lights_entity_state: []
+      night_glow_light_brightness: 1
+      include_night_glow_light_control: []
+      include_night_glow_light_colour_control: disable_colour_control
+      night_glow_light_colour_temperature: 2500
+      include_night_glow: night_glow_disabled
+      night_glow_light_transition_on: 2
+      night_light_brightness: 0
+      night_light_transition_on: 0
+      night_light_transition_off: 2
+      include_night_light_colour_control: disable_colour_control
+      night_light_colour_temperature: 2500
+      night_glow_light_transition_off: 5
+      dynamic_lighting_state_control_activation_state: 'off'
+      include_light_colour_control: disable_colour_control
+      motion_bypass_lights_on: []
+      include_bypass_auto_off: []
+      bypass_auto_off_delay: 10
+      night_lights_after_time: 00:00:00
+      include_night_light_control: []
+      night_time_delay: 5
+      night_lights_before_time: 00:00:00
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      include_state_control: state_control_enabled
+      night_glow_lights:
+        entity_id: light.landing_light
+      include_ambient: ambient_disabled
+      ambient_light_options: ambient_light_option_enabled
+      ambient_light_value: 3
+      motion_bypass_lights_off:
+      - input_boolean.night_lights_mode
+      ambient_light_high_value: 150
+- id: '1761999157689'
+  alias: Bedside Light ON while occupied in daytime
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.bedroom_motion_sensor_occupancy
+      light_switch:
+        entity_id: scene.bedside_light_daytime_lighting
+      time_delay: 3
+      include_bypass:
+      - bypass_enabled_stop
+      motion_bypass_lights_on: []
+      motion_bypass_lights_stop:
+      - input_boolean.bedroom_light_bypass
+      - input_boolean.night_lights_mode
+      include_time: time_enabled
+      after_time: 07:30:15
+      before_time: '22:30:00'
+      ambient_light_value: 5
+      ambient_light_high_value: 10
+      include_ambient: ambient_disabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      include_state_control: state_control_enabled
+      bypass_time_delay: 0
+      motion_bypass_lights_off: []
+      include_bypass_auto_off:
+      - bypass_auto_off_enabled_stop
+      bypass_auto_off_delay: 120
+      end_scenes:
+      - scene.bedside_light_turn_off
+      boolean_scenes_scripts: input_boolean.bedroom_light_toggle_helper
+      sun_elevation: 5
+      include_sun: sun_enabled
+      sun_elevation_rising: 5
+- id: '1762008531055'
+  alias: Bedside Light ON if waking up in the night
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.bedroom_motion_sensor_occupancy
+      light_switch:
+        entity_id: scene.bedside_light_night_reading
+      time_delay: 1.5
+      include_bypass:
+      - bypass_enabled_stop
+      motion_bypass_lights_on: []
+      motion_bypass_lights_stop:
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+      include_time: time_disabled
+      sun_elevation_rising: 5
+      include_sun: sun_disabled
+      state_control_entity: input_boolean.night_lights_mode
+      boolean_scenes_scripts: input_boolean.bedroom_night_light_helper
+      end_scenes:
+      - scene.bedside_light_turn_off
+      include_state_control: state_control_enabled
+      state_control_activation_state: 'on'
+- id: '1762181503871'
+  alias: Ian's Bedside Button
+  description: ''
+  triggers:
+  - domain: mqtt
+    device_id: 8923dc609c09f1ab70f1a70dae49a2b5
+    type: action
+    subtype: single
+    trigger: device
+    id: single
+  - domain: mqtt
+    device_id: 8923dc609c09f1ab70f1a70dae49a2b5
+    type: action
+    subtype: hold
+    trigger: device
+    id: hold
+  - domain: mqtt
+    device_id: 8923dc609c09f1ab70f1a70dae49a2b5
+    type: action
+    subtype: double
+    trigger: device
+    id: double
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - single
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.bedside_light
+          state: 'on'
+        then:
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.bedside_light
+        else:
+        - action: scene.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: scene.bedside_light_reading_in_bed
+    - conditions:
+      - condition: trigger
+        id:
+        - double
+      sequence:
+      - action: scene.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: scene.bedside_light_reading_in_bed_duplicate
+    - conditions:
+      - condition: trigger
+        id:
+        - hold
+      sequence:
+      - action: scene.turn_on
+        metadata: {}
+        data: {}
+        target:
+          entity_id: scene.bedside_light_night_reading
+  mode: single
+- id: '1762337178037'
+  alias: Entity State Notification - Dehumidifier Water Tank needs emptying
+  description: ''
+  use_blueprint:
+    path: Blackshome/notifications-and-announcements.yaml
+    input:
+      trigger_state_entity:
+      - binary_sensor.arete_r_two_12l_dehumidifier_air_purifier_tank_full
+      trigger_state: 'on'
+      include_notify: enable_mobile_app_notify
+      notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      notify_title: Dehumidifier
+      notify_message: Water tank is full
+      notify_data:
+      - sticky
+      after_time: 06:30:00
+      before_time: 09:50:00
+      include_time: time_disabled
+      include_tts_announcement: enable_tts_announcement
+      text_to_speech_engine: tts.home_assistant_cloud
+      media_player:
+      - media_player.sonos_bedroom
+      - media_player.sonos_kitchen
+      notify_tts_message: The dehumidifier's water tank needs emptying
+      include_persistent_notification: enable_persistent_notification
+      persistent_title: Meaco
+      persistent_message: The water tank needs emptying
+- id: '1762358918753'
+  alias: Landing Lights Manual Control Status Tracker
+  description: ''
+  use_blueprint:
+    path: Blackshome/manual-control-status-tracker.yaml
+    input:
+      target_entities:
+      - light.landing_light
+      - light.stairs_light
+      manual_tracking: input_boolean.landing_light_on_bypass
+      manual_tracking_time_delay: 0
+      include_auto_off: enable_all_auto_off
+- id: '1762612881889'
+  alias: Front Door motion detection (Optimized)
+  description: 'Motion detection OFF only when: door open OR hall occupied (about
+    to exit). Otherwise always ON.'
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.front_door_sensor_contact
+    to: 'on'
+    id: disable
+  - trigger: state
+    entity_id: binary_sensor.hall_presence_sensor_occupancy
+    to: 'on'
+    id: disable
+    for:
+      seconds: 15
+  - trigger: state
+    entity_id: binary_sensor.front_door_sensor_contact
+    to: 'off'
+    id: enable
+    for:
+      seconds: 30
+  - trigger: state
+    entity_id: binary_sensor.hall_presence_sensor_occupancy
+    to: 'off'
+    id: enable
+  - trigger: state
+    entity_id: binary_sensor.occupied
+    to: 'off'
+    id: enable
+  - trigger: state
+    entity_id:
+    - binary_sensor.occupied
+    to:
+    - 'on'
+    id: disable
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 15
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id: disable
+      - condition: state
+        entity_id: switch.front_door_motion_detection
+        state: 'on'
+      sequence:
+      - action: script.turn_off_front_door_motion_detection
+        data: {}
+    - conditions:
+      - condition: trigger
+        id: enable
+      - condition: state
+        entity_id: switch.front_door_motion_detection
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.front_door_sensor_contact
+        state: 'off'
+      - condition: state
+        entity_id: binary_sensor.hall_presence_sensor_occupancy
+        state: 'off'
+      sequence:
+      - action: script.turn_on_front_door_motion_detection
+        data: {}
+  variables:
+    motion_switch: switch.front_door_motion_detection
+  mode: restart
+- id: '1762951179782'
+  alias: Kettle tracking
+  description: ''
+  use_blueprint:
+    path: Blackshome/appliance-notifications.yaml
+    input:
+      power_sensor: sensor.tapo_pm5_kettle_current_consumption
+      end_notify_device: []
+      end_message_title: Dishwasher
+      end_message: The dishwasher has finished
+      include_power_tracking: enable_power_tracking
+      start_notify_device: []
+      include_start_notify: disable_start_notify_options
+      end_time_delay: 0
+      end_appliance_power: 5
+      start_title: Dishwasher
+      include_end_notify: disable_end_notify_options
+      start_power_consumption: input_number.kettle_kwh_start
+      end_power_consumption: input_number.kettle_kwh_end
+      power_consumption_sensor: sensor.tapo_pm5_kettle_this_month_s_consumption
+      include_runtime_tracking: enable_runtime_tracking
+      include_duration_tracking: enable_duration_tracking
+      include_cycle_counter: enable_cycle_counter
+      cycle_counter_helper: counter.kettle_total_cycles
+      service_reminder_cycles: 30
+      service_reminder_end_message: ⚠️ It's time to clean the filter!
+      include_service_reminder: disable_service_reminder
+      include_custom_actions:
+      - enable_start_custom_actions
+      end_custom_actions: []
+      include_time: time_disabled
+      include_device_tracker: []
+      notify_zone: zone.home
+      include_run_status: run_status_enabled
+      run_status_end: 'off'
+      run_status_start: boiling
+      run_status_entity: input_select.kettle_status
+      watchdog_timeframe:
+        hours: 0
+        minutes: 5
+        seconds: 0
+      watchdog_notify_device:
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      - 1dc9b847cc323922605b2ed8175088b8
+      start_time_delay: 0
+      running_dead_zone: 0
+      service_reminder_time_end_message: ⚠️ It's time to run the Machine Care programme!
+      include_time_service_reminder: disable_time_service_reminder
+      runtime_tracking_helper: input_text.kettle_duration
+      start_appliance_power: 30
+      start_custom_actions:
+      - action: input_text.set_value
+        metadata: {}
+        data:
+          value: '0 '
+        target:
+          entity_id: input_text.kettle_duration
+      include_watchdog: enable_watchdog
+      watchdog_message: Uh-oh! The Kettle is boiling away
+      watchdog_notify_data:
+      - high_priority
+      - sticky
+- id: '1763223602741'
+  alias: Bedside Light - 5:45 am to 7:30 am
+  description: ''
+  use_blueprint:
+    path: Blackshome/sensor-light.yaml
+    input:
+      motion_trigger:
+      - binary_sensor.bedroom_motion_sensor_occupancy
+      light_switch:
+        entity_id:
+        - scene.bedside_light_reading_in_bed_duplicate
+      time_delay: 3
+      include_bypass: []
+      motion_bypass_lights_on: []
+      motion_bypass_lights_stop: []
+      include_time: time_enabled
+      after_time: 05:45:00
+      before_time: 07:30:00
+      ambient_light_value: 6
+      ambient_light_high_value: 12
+      include_ambient: ambient_disabled
+      state_control_entity: input_boolean.suspend_automation_of_lighting_current_bypass
+      include_state_control: state_control_enabled
+      bypass_time_delay: 0
+      motion_bypass_lights_off: []
+      include_bypass_auto_off: []
+      bypass_auto_off_delay: 180
+      end_scenes:
+      - scene.bedside_light_turn_off
+      boolean_scenes_scripts: input_boolean.bedside_lamp_time_for_bed_helper
+      night_lights_after_time: 06:00:00
+      night_lights_before_time: 07:30:00
+      night_lights_conditions:
+      - time_enabled
+      night_lights:
+        entity_id: scene.bedside_light_reading_in_bed
+      night_glow_lights:
+        entity_id: light.bedside_light
+      include_night_glow_light_control:
+      - use_brightness
+      night_glow_light_transition_on: 0
+      include_night_glow: night_glow_enabled
+      include_night_lights: night_lights_enabled
+      night_time_delay: 5
+      night_light_brightness: 30
+      include_night_light_colour_control: use_colour_temperature
+      night_light_colour_temperature: 2000
+      night_glow_light_transition_off: 0
+      include_night_light_control:
+      - use_brightness
+      - if_lights_are_on_adjust_when_crossing_over
+      include_night_glow_light_colour_control: use_colour_temperature
+      night_glow_light_colour_temperature: 3000
+      night_light_transition_on: 0
+      include_light_colour_control: disable_colour_control
+      light_colour_temperature: 3500
+      light_transition_on: 0
+      light_transition_off: 0
+      night_glow_light_brightness: 5
+      sun_elevation_rising: 10
+      include_sun: sun_enabled
+      night_light_transition_off: 0
+- id: '1764608123066'
+  alias: Group Dining Room Sonos with Kitchen on Motion
+  description: ''
+  triggers:
+  - entity_id:
+    - binary_sensor.dining_presence_sensor_occupancy
+    from: 'off'
+    to: 'on'
+    id: t1
+    trigger: state
+  - entity_id:
+    - binary_sensor.dining_presence_sensor_occupancy
+    from: 'on'
+    to: 'off'
+    id: t2
+    trigger: state
+  - entity_id: media_player.sonos_kitchen
+    to: playing
+    id: t3
+    trigger: state
+  - event: start
+    id: t4
+    trigger: homeassistant
+  - event_type: automation_reloaded
+    id: t5
+    trigger: event
+  - trigger: state
+    entity_id:
+    - media_player.sonos_kitchen
+    to:
+    - idle
+    id: t6
+  conditions:
+  - condition: and
+    conditions:
+    - condition: state
+      entity_id: media_player.sonos_kitchen
+      state: playing
+    - condition: or
+      conditions:
+      - condition: state
+        entity_id: media_player.sonos_dining
+        state: paused
+      - condition: state
+        entity_id: media_player.sonos_dining
+        state: idle
+      - condition: template
+        value_template: '{{ sonos_target in state_attr(sonos_source, "group_members")
+          }}'
+    - condition: template
+      value_template: '{{ allow_tv or state_attr(sonos_source, "source")  != "TV"
+        }}'
+  actions:
+  - choose:
+    - alias: Motion has been detected - group speakers
+      conditions:
+      - condition: trigger
+        id: t1
+      sequence:
+      - alias: Add the speaker to the group
+        data:
+          group_members:
+          - media_player.sonos_dining
+        target:
+          entity_id: media_player.sonos_kitchen
+        action: media_player.join
+    - alias: Motion has no longer been detected - unjoin after delay
+      conditions:
+      - condition: trigger
+        id:
+        - t2
+        - t6
+      - condition: state
+        entity_id: binary_sensor.dining_presence_sensor_occupancy
+        state:
+        - 'off'
+      sequence:
+      - alias: Wait the number of minutes set in the time delay
+        delay:
+          minutes: 10
+      - alias: Unjoin the speaker from the group
+        target:
+          entity_id: media_player.sonos_dining
+        action: media_player.unjoin
+    - conditions:
+      - condition: trigger
+        id:
+        - t3
+      - condition: state
+        entity_id: binary_sensor.dining_presence_sensor_occupancy
+        state:
+        - 'on'
+      sequence:
+      - alias: Add the speaker to the group
+        data:
+          group_members:
+          - media_player.sonos_dining
+        target:
+          entity_id: media_player.sonos_kitchen
+        action: media_player.join
+      alias: Kitchen changed to playing  and room already occupied
+  mode: restart
+  max_exceeded: silent
+  variables:
+    motion_trigger:
+    - binary_sensor.dining_presence_sensor_occupancy
+    sonos_source: media_player.sonos_kitchen
+    sonos_target: media_player.sonos_dining
+    allow_tv: false
+    time_delay: 10
+- id: '1764768783718'
+  alias: Entity State Notification - Water Leak under Kitchen Sink
+  description: ''
+  use_blueprint:
+    path: Blackshome/state-notifications-and-actions.yaml
+    input:
+      start_trigger_state: 'on'
+      start_trigger_state_entity:
+      - binary_sensor.kitchen_sink_water_leak_water_leak
+      start_time_delay_state:
+        hours: 0
+        minutes: 0
+        seconds: 5
+      include_start_notify: enable_start_notify_options
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      start_title: 'Alert! '
+      start_message: There is a water leak under the Kitchen sink!
+      start_notify_tag: utility-water-leak
+      start_notify_data:
+      - high_priority
+      - sticky
+      start_notify_icon_colour:
+      - 255
+      - 116
+      - 41
+      include_start_auto_actions:
+      - enable_start_action_1
+      - enable_start_action_2
+      start_action_1:
+      - action: notify.send_message
+        metadata: {}
+        data:
+          message: There is a water leak under the kitchen sink!
+        target:
+          entity_id:
+          - notify.echo_kitchen_announce
+          - notify.echo_snug_announce
+      - action: script.unified_tts_announcement_ma_sonos_native
+        data:
+          message: There is a water leak under the kitchen sink!
+          announcement_volume: 0.8
+          target_players:
+            entity_id:
+            - media_player.sonos_bedroom
+            - media_player.lounge
+            - media_player.kitchen
+      include_start_action_buttons: []
+      start_action_button_stop: Cancel automation
+      include_start_action_button_confirmation: disable_start_action_button_confirmation
+      start_action_2: []
+      start_time_delay:
+        hours: 0
+        minutes: 30
+        seconds: 0
+- id: '1764963904293'
+  alias: Kitchen Sonoff TRVZB External Temperature Sensor Calibration
+  description: ''
+  use_blueprint:
+    path: photomoose/sonoff-trvzb-external-temperature-sensor-calibration.yaml
+    input:
+      external_temperature_sensor: sensor.kitchen_sensor_temperature
+      trv_external_temperature_input:
+      - number.kitchen_radiator_external_temperature_input
+- id: '1765115170175'
+  alias: Lounge Sonoff TRVZB's External Temperature Sensor Calibration
+  description: ''
+  use_blueprint:
+    path: photomoose/sonoff-trvzb-external-temperature-sensor-calibration.yaml
+    input:
+      external_temperature_sensor: sensor.lounge_sensor_temperature
+      trv_external_temperature_input:
+      - number.lounge_radiator_large_external_temperature_input
+      - number.lounge_radiator_small_external_temperature_input
+- id: '1766070740924'
+  alias: Snug Manual Light (daytime only)
+  description: ''
+  use_blueprint:
+    path: Blackshome/manual-light.yaml
+    input:
+      trigger_input:
+      - light.snug_lamp
+      include_timer_helper: enable_timer_helper
+      timer_helper: timer.snug_lamp_manual_timer
+      include_motion_trigger: enable_motion_trigger
+      motion_trigger: binary_sensor.snug_presence_sensor_occupancy
+      saved_lights_input: input_text.snug_lamp_manual_grace_helper
+      include_bypass:
+      - bypass_enabled_turn_off
+      bypass_lights_stop: []
+      time_delay:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      include_grace_period: disable_grace_period
+      bypass_lights_off:
+      - binary_sensor.light_bypass_overnight
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1766151363429'
+  alias: Study Manual Light (daytime only)
+  description: ''
+  use_blueprint:
+    path: Blackshome/manual-light.yaml
+    input:
+      trigger_input:
+      - light.study_light
+      include_timer_helper: enable_timer_helper
+      timer_helper: timer.study_light_manual_timer
+      include_motion_trigger: enable_motion_trigger
+      motion_trigger: binary_sensor.study_presence_sensor_occupancy
+      saved_lights_input: input_text.snug_lamp_manual_grace_helper
+      include_bypass:
+      - bypass_enabled_turn_off
+      - bypass_enabled_stop
+      bypass_lights_stop:
+      - binary_sensor.light_bypass_overnight
+      time_delay:
+        hours: 0
+        minutes: 10
+        seconds: 0
+      include_grace_period: disable_grace_period
+      bypass_lights_off:
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+- id: '1766166886616'
+  alias: Dyson Battery Charger Notifications & Actions
+  description: ''
+  use_blueprint:
+    path: Blackshome/battery-charger-notifications.yaml
+    input:
+      charger_switch: switch.dyson_charger_plug
+      trigger_options:
+      - time_trigger_enabled
+      - entity_trigger_enabled
+      entity_trigger: switch.dyson_charger_plug
+      time_trigger: 04:00:00
+      power_sensor: sensor.dyson_charger_plug_power
+      running_dead_zone: 1
+      entity_off_end:
+      - switch.dyson_charger_plug
+      include_entity_off_end_option: entity_off_enabled
+      entity_off_end_time_delay: 0
+      include_cycle_counter: enable_cycle_counter
+      cycle_counter_helper: counter.dyson_cycles
+      global_conditions:
+      - condition: state
+        entity_id: input_boolean.holiday_mode
+        state:
+        - 'off'
+- id: '1766394432620'
+  alias: Snug Presence Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      pir_sensor: binary_sensor.snug_motion_occupancy
+      mmwave_presence: binary_sensor.snug_presence_sensor_occupancy
+      watchdog_timer: timer.snug_presence_timer_helper
+      mmwave_sensitivity_select: select.snug_presence_sensor_occupancy_sensitivity
+      max_on_time:
+        hours: 2
+        minutes: 30
+        seconds: 0
+      pir_clear_time:
+        hours: 0
+        minutes: 45
+        seconds: 0
+      target_area: snug
+      presence_sensor: binary_sensor.snug_presence_sensor_occupancy
+      secondary_sensor: binary_sensor.snug_motion_sensor_occupancy
+      secondary_clear_time:
+        hours: 0
+        minutes: 20
+        seconds: 0
+      recheck_delay:
+        hours: 0
+        minutes: 0
+        seconds: 45
+- id: '1766580672360'
+  alias: Study Presence Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      pir_sensor: binary_sensor.study_motion_sensor_occupancy
+      mmwave_presence: binary_sensor.study_presence_sensor_occupancy
+      watchdog_timer: timer.study_presence_time_helper
+      mmwave_sensitivity_select: select.study_presence_sensor_occupancy_sensitivity
+      max_on_time:
+        hours: 2
+        minutes: 0
+        seconds: 0
+      pir_clear_time:
+        hours: 0
+        minutes: 45
+        seconds: 0
+      target_area: study
+      presence_sensor: binary_sensor.study_presence_sensor_occupancy
+      secondary_sensor: binary_sensor.study_motion_sensor_occupancy
+      secondary_clear_time:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      recheck_delay:
+        hours: 0
+        minutes: 0
+        seconds: 45
+- id: '1766580902023'
+  alias: Dining Presence Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      pir_sensor: binary_sensor.dining_room_motion_sensor_occupancy
+      mmwave_presence: binary_sensor.dining_presence_sensor_occupancy
+      watchdog_timer: timer.dining_presence_timer_helper
+      mmwave_sensitivity_select: select.dining_presence_sensor_occupancy_sensitivity
+      max_on_time:
+        hours: 1
+        minutes: 30
+        seconds: 0
+      pir_clear_time:
+        hours: 0
+        minutes: 45
+        seconds: 0
+      target_area: dining_room
+      presence_sensor: binary_sensor.dining_presence_sensor_occupancy
+      secondary_sensor: binary_sensor.dining_room_motion_sensor_occupancy
+      secondary_clear_time:
+        hours: 0
+        minutes: 45
+        seconds: 0
+- id: '1766675007050'
+  alias: Hall Presence Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.hall_presence_sensor_occupancy
+      max_on_time:
+        hours: 0
+        minutes: 15
+        seconds: 0
+      mmwave_sensitivity_select: select.hall_presence_sensor_occupancy_sensitivity
+      watchdog_timer: timer.hall_presence_sensor_timer_helper
+- id: '1766675250878'
+  alias: Kitchen Presence Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.kitchen_presence_sensor_occupancy
+      watchdog_timer: timer.kitchen_presence_timer_helper
+      max_on_time:
+        hours: 3
+        minutes: 0
+        seconds: 0
+      mmwave_sensitivity_select: select.kitchen_presence_sensor_occupancy_sensitivity
+      target_area: kitchen
+- id: '1766676095765'
+  alias: Landing Motion Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.stair_light_motion_sensor_occupancy
+      watchdog_timer: timer.landing_motion_timer_helper
+      max_on_time:
+        hours: 0
+        minutes: 30
+        seconds: 0
+      target_area: landing
+      secondary_clear_time:
+        hours: 0
+        minutes: 0
+        seconds: 0
+- id: '1766676437478'
+  alias: Garage Motion Sensor (back door) Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.garage_motion_sensor_back_door_occupancy
+      watchdog_timer: timer.garage_back_door_motion_timer_helper
+      mmwave_sensitivity_select: select.garage_motion_sensor_back_door_sensitivity
+      target_area: garage
+- id: '1766676561666'
+  alias: Garage Motion Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.garage_light_motion_sensor_occupancy
+      watchdog_timer: timer.garage_motion_timer_helper
+      target_area: garage
+- id: '1766676740959'
+  alias: Bedroom Motion Sensor Watchdog
+  description: ''
+  use_blueprint:
+    path: presence_watchdog.yaml
+    input:
+      presence_sensor: binary_sensor.bedroom_motion_sensor_occupancy
+      watchdog_timer: timer.bedroom_motion_timer_helper
+      target_area: bedroom
+      max_on_time:
+        hours: 0
+        minutes: 30
+        seconds: 0
+- id: '1767004791405'
+  alias: Garage Door Sensor Failure Watchdog
+  description: Identify which specific sensor failed to report based on Master state
+  triggers:
+  - value_template: '{{ states(''sensor.garage_door_diagnostic_sensor'') != ''Synchronized''
+      }}'
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+    trigger: template
+    alias: When garage door diagnostic shows an error
+    id: unsynch
+  - value_template: '{{ states(''sensor.garage_door_diagnostic_sensor'') == ''Synchronized''
+      }}'
+    for:
+      hours: 0
+      minutes: 1
+      seconds: 0
+      milliseconds: 0
+    trigger: template
+    alias: WHen garage door diagnostic changes to 'synchronized'
+    id: synch
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - unsynch
+      sequence:
+      - action: notify.persistent_notification
+        metadata: {}
+        data:
+          title: ⚠️ Garage Door Sensor Fault
+          message: "{% set master = states('binary_sensor.master_garage_door') %}
+            {% set left =     states('binary_sensor.garage_door_l_contact') %} {%
+            set right =     states('binary_sensor.garage_door_r_contact') %}\nThe
+            problem sensor says {{ master | upper }}. \n{% if left != master %}FAULT:
+            Garage Door (L) is stuck on. {{ left }}\n{% elif right != master %}FAULT:
+            Garage Door (R) is stuck on. {{ right }}  {% else %}But both sensors are
+            now re-scynched. {% endif %}\nRecyle the door and if that doesn't fix
+            it, check for sensor issue such as low battery, poor LQI, or mislignement.
+            Repair to Zigbee network if appropriate.\n"
+          data:
+            notification_id: garage_door
+    - conditions:
+      - condition: trigger
+        id:
+        - synch
+      sequence:
+      - action: persistent_notification.dismiss
+        metadata: {}
+        data:
+          notification_id: garage_door
+  mode: restart
+- id: '1767256859143'
+  alias: 'Heating Conflict: Tado Force Stop & Verify'
+  description: Resets Tado to 12C when boiler is OFF and verifies the result.
+  triggers:
+  - entity_id: sensor.heating_system_diagnostic
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: '{{ ''Boiler OFF'' in states(''sensor.heating_system_diagnostic'')
+      }}'
+  actions:
+  - action: notify.persistent_notification
+    data:
+      title: Heating Sync Error
+      message: VTs are OFF but Tado is calling for heat. Attempting reset...
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: Heating Conflict Detected
+      message: Boiler is OFF but Tado is at {{ state_attr('climate.tado_smart_thermostat_ru2393140992',
+        'temperature') }}°C. Resetting now.
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+    data:
+      temperature: 12
+      hvac_mode: heat
+  - delay: 00:00:30
+  - if:
+    - condition: template
+      value_template: '{{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+        ''temperature'') | float <= 12 }}'
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Heating Sync: Fixed'
+        message: Tado has successfully reset to 12°C. System is now idle.
+    - action: notify.persistent_notification
+      data:
+        title: 'Heating Sync: Fixed'
+        message: Verification successful. Tado is now at 12°C.
+    else:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Heating Sync: FAILED'
+        message: 'CRITICAL: Tado is still at {{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+          ''temperature'') }}°C after reset attempt. Manual intervention required.'
+        data:
+          priority: high
+          clickAction: /lovelace-thermostat
+  mode: single
+- id: '1767258611739'
+  alias: 'Heating Conflict: Tado Force Start & Verify'
+  description: Resets Tado to 24C when boiler is ON and verifies the result.
+  triggers:
+  - entity_id: sensor.heating_system_diagnostic
+    trigger: state
+  conditions:
+  - condition: template
+    value_template: '{{ ''Boiler ON'' in states(''sensor.heating_system_diagnostic'')
+      }}'
+  actions:
+  - action: notify.persistent_notification
+    data:
+      title: Heating Sync Error
+      message: VT wants heat but Tado is stuck at 12°C. Attempting to force 24°C...
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: Heating Conflict Detected
+      message: Boiler is ON but Tado is at {{ state_attr('climate.tado_smart_thermostat_ru2393140992',
+        'temperature') }}°C. Forcing Heat now.
+      data:
+        tag: heating-alert
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+    data:
+      temperature: 24
+      hvac_mode: heat
+  - delay: 00:00:20
+  - if:
+    - condition: template
+      value_template: '{{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+        ''temperature'') | float >= 24 }}'
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Heating Sync: Fixed'
+        message: Tado has successfully jumped to 24°C. Radiators should be warming.
+        data:
+          tag: heating-alert
+    - action: notify.persistent_notification
+      data:
+        title: 'Heating Sync: Fixed'
+        message: Verification successful. Tado is now at 24°C.
+    else:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Heating Sync: FAILED'
+        message: 'CRITICAL: Tado is still at {{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+          ''temperature'') }}°C after ''Force Start'' attempt.'
+        data:
+          priority: high
+          tag: heating-alert
+          clickAction: /lovelace-thermostat
+  mode: single
+- id: '1767543179174'
+  alias: When Holiday Switch is turned ON
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.holiday_mode
+    from:
+    - 'off'
+    to:
+    - 'on'
+  conditions: []
+  actions:
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.heating_system_on
+    data: {}
+    alias: Turn heating system OFF ('Frost' mode)
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.suspend_automation_of_lighting_current_bypass
+    data: {}
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      area_id:
+      - snug
+      - dining_room
+      - kitchen
+      - lounge
+      device_id: 3caa8013260600d0a0ae856adc333328
+      entity_id:
+      - switch.bedroom_fan_plug
+    data: {}
+  mode: single
+- id: '1767803513889'
+  alias: When holiday mode turns off
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - input_boolean.holiday_mode
+    to:
+    - 'off'
+    from:
+  conditions: []
+  actions:
+  - action: input_boolean.turn_on
+    metadata: {}
+    target:
+      entity_id: input_boolean.heating_system_on
+    data: {}
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.suspend_automation_of_lighting_current_bypass
+    data: {}
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      area_id:
+      - snug
+      - kitchen
+      - dining_room
+      - lounge
+      entity_id:
+      - switch.plugs_off_overnight
+      - switch.bedroom_fan_plug
+      device_id: 3caa8013260600d0a0ae856adc333328
+    data: {}
+  - action: script.turn_off_all_dining_room_lights
+    metadata: {}
+    data: {}
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id:
+      - light.worktop_lights
+      - light.snug_lamp
+    data: {}
+  mode: single
+- id: '1767889271196'
+  alias: 'Heating Conflict: No VT Preset, TRV Nudge, or set to Auto'
+  description: When a "rogue" state is detected, the supervisor first checks if the
+    hardware  is in the wrong mode. If it is, it performs a silent "Force Fix" and
+    leaves a log in  your sidebar. If the mode is correct but the temperature has
+    changed  significantly, it assumes you want a temporary boost or reduction and
+    sets a  30-minute timer, notifying your mobile device for confirmation.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.heating_system_rogue_radiator_alert
+    to: 'on'
+    id: rogue_detected
+  - trigger: event
+    event_type: mobile_app_notification_action
+    event_data:
+      action: FIX_NOW
+    id: force_fix
+  actions:
+  - if:
+    - condition: trigger
+      id: force_fix
+    then:
+    - variables:
+        target_vt: '{{ states(''input_text.heating_nudge_entity'') }}'
+        room_id: "{{ target_vt.split('.')[1]\n    | replace('_versatile_thermostat',
+          '')\n    | replace('_small', '')\n    | replace('_large', '') }}"
+        schedule_entity: switch.schedule_{{ room_id }}_heating_schedule
+        slot: '{{ state_attr(schedule_entity, ''current_slot'') }}'
+        correct_preset: '{{ state_attr(schedule_entity, ''actions'')[slot | int].data.preset_mode
+          if slot is not none else ''activity'' }}'
+    - if:
+      - condition: template
+        value_template: '{{ target_vt not in [''unknown'', ''unavailable'', ''none'',
+          ''''] }}'
+      then:
+      - action: versatile_thermostat.cancel_timed_preset
+        target:
+          entity_id: '{{ target_vt }}'
+      - action: climate.set_preset_mode
+        target:
+          entity_id: '{{ target_vt }}'
+        data:
+          preset_mode: '{{ correct_preset }}'
+      - action: input_text.set_value
+        target:
+          entity_id: input_text.heating_nudge_entity
+        data:
+          value: none
+      - action: notify.mobile_app_pixel_9_pro_xl
+        data:
+          message: clear_notification
+          data:
+            tag: heating_nudge
+    - stop: User forced fix.
+  - repeat:
+      for_each: '{{ state_attr(''binary_sensor.heating_system_rogue_radiator_alert'',
+        ''rogue_entities'') | default([], true) }}'
+      sequence:
+      - variables:
+          vt_entity: '{{ repeat.item }}'
+          friendly_room: '{{ state_attr(vt_entity, ''friendly_name'') | replace(''
+            Versatile Thermostat'', '''') }}'
+          raw_requested: '{{ state_attr(vt_entity, ''requested_preset'') }}'
+          room_id: "{{ vt_entity.split('.')[1]\n    | replace('_versatile_thermostat',
+            '')\n    | replace('_small', '')\n    | replace('_large', '') }}"
+          schedule_entity: switch.schedule_{{ room_id }}_heating_schedule
+          slot: '{{ state_attr(schedule_entity, ''current_slot'') }}'
+          correct_preset: '{{ state_attr(schedule_entity, ''actions'')[slot | int].data.preset_mode
+            if slot is not none else ''activity'' }}'
+          return_preset: '{{ raw_requested if raw_requested not in [''none'', ''unknown'',
+            ''unavailable'', None] else correct_preset }}'
+          trv_entity: '{{ state_attr(vt_entity, ''vtherm_over_climate'').underlying_entities[0]
+            }}'
+          trv_temp: '{{ state_attr(trv_entity, ''temperature'') | float(0) }}'
+          presets: '{{ state_attr(vt_entity, ''preset_temperatures'') }}'
+          baseline_temp: '{% set p_key = return_preset + ''_temp'' %}  {{ presets.get(p_key)
+            | float(19) }}'
+          temp_diff: '{{ (trv_temp - baseline_temp) | round(1) }}'
+          is_mode_error: "{{ states(trv_entity) == 'auto' or \n   states(trv_entity)
+            not in ['heat', 'off'] or\n   (state_attr(vt_entity, 'preset_mode') in
+            ['none', none] and (temp_diff | abs) < 0.5) }}"
+          target_preset: "{% set ladder = ['eco', 'comfort', 'boost'] %}\n{% set current_idx
+            = ladder.index(return_preset) if return_preset in ladder else 1 %}\n{%
+            if temp_diff > 0 %}\n  {{ ladder[current_idx + 1] if current_idx < 2 else
+            'boost' }}\n{% else %}\n  {{ ladder[current_idx - 1] if current_idx >
+            0 else 'eco' }}\n{% endif %}"
+      - choose:
+        - conditions:
+          - condition: template
+            value_template: '{{ is_mode_error }}'
+          sequence:
+          - action: versatile_thermostat.cancel_timed_preset
+            target:
+              entity_id: '{{ vt_entity }}'
+          - action: climate.set_hvac_mode
+            target:
+              entity_id: '{{ vt_entity }}'
+            data:
+              hvac_mode: heat
+          - wait_template: '{{ is_state(vt_entity, ''heat'') }}'
+            timeout: 00:00:05
+          - action: climate.set_preset_mode
+            target:
+              entity_id: '{{ vt_entity }}'
+            data:
+              preset_mode: '{{ correct_preset }}'
+          - action: persistent_notification.create
+            data:
+              title: 'Heating Sync: {{ friendly_room }}'
+              message: 'Time: {{ now().strftime(''%H:%M:%S'') }} – Mode error (Auto/Manual)
+                detected. Restored {{ correct_preset }}.
+
+                '
+              notification_id: heating_error_{{ room_id }}
+          - if:
+            - condition: template
+              value_template: '{{ states(''input_text.heating_nudge_entity'') == vt_entity
+                }}'
+            then:
+            - action: input_text.set_value
+              target:
+                entity_id: input_text.heating_nudge_entity
+              data:
+                value: none
+            - action: notify.mobile_app_pixel_9_pro_xl
+              data:
+                message: clear_notification
+                data:
+                  tag: heating_nudge
+        - conditions:
+          - condition: template
+            value_template: '{{ (temp_diff | abs) >= 0.5 }}'
+          sequence:
+          - action: input_text.set_value
+            target:
+              entity_id: input_text.heating_nudge_entity
+            data:
+              value: '{{ vt_entity }}'
+          - action: climate.set_preset_mode
+            target:
+              entity_id: '{{ vt_entity }}'
+            data:
+              preset_mode: '{{ return_preset }}'
+          - action: versatile_thermostat.set_timed_preset
+            target:
+              entity_id: '{{ vt_entity }}'
+            data:
+              preset: '{{ target_preset }}'
+              duration_minutes: 30
+          - action: notify.mobile_app_pixel_9_pro_xl
+            data:
+              title: 'Nudge: {{ return_preset }} -> {{ target_preset }}'
+              message: Setting {{ target_preset }} for 30m in the {{ friendly_room
+                }}.
+              data:
+                tag: heating_nudge
+                actions:
+                - action: FIX_NOW
+                  title: Cancel & Fix Now
+  mode: restart
+- id: '1767952200835'
+  alias: 'Heating Conflict: Radiator temperature source set to ''internal'''
+  description: Triggered by hardware sensor change. Always sets TRVs back to 'external'.
+    Only resyncs the VT software if the preset has dropped to 'none'.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.any_radiator_temperature_sensor_select_internal
+    to: 'on'
+  actions:
+  - variables:
+      rogue_vts: "{% set ns = namespace(found=[]) %} {% set all_vts = states.climate
+        | selectattr('attributes.vtherm_over_climate', 'defined') | list %} {% for
+        vt in all_vts %}\n  {% set trv = vt.attributes.vtherm_over_climate.underlying_entities[0]
+        %}\n  {% set dev_id = device_id(trv) %}\n  {% if dev_id %}\n    {% set select_entity
+        = device_entities(dev_id) | select('search', 'temperature_sensor_select')
+        | first | default(none) %}\n    {% if select_entity and is_state(select_entity,
+        'internal') %}\n      {% set ns.found = ns.found + [vt.entity_id] %}\n    {%
+        endif %}\n  {% endif %}\n{% endfor %} {{ ns.found }}"
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: Radiator Sensor Alert
+      message: "{% if rogue_vts | length == 0 %}\n  Internal sensor alert triggered,
+        but no matching TRVs found.\n{% elif rogue_vts | length == 1 %}\n  {{ state_attr(rogue_vts[0],
+        'friendly_name') | replace(' Versatile Thermostat', '') }} TRV reset to 'external'.\n{%
+        else %}\n  {{ rogue_vts | length }} radiators found in 'internal' mode. Fixing
+        hardware...\n{% endif %}"
+  - repeat:
+      for_each: '{{ rogue_vts }}'
+      sequence:
+      - variables:
+          vt_entity: '{{ repeat.item }}'
+          trv_entity: '{{ state_attr(vt_entity, ''vtherm_over_climate'').underlying_entities[0]
+            }}'
+          select_entity: '{{ device_entities(device_id(trv_entity)) | select(''search'',
+            ''temperature_sensor_select'') | first }}'
+          room_id: "{{ vt_entity.split('.')[1]\n    | replace('_versatile_thermostat',
+            '')\n    | replace('_radiator', '')\n    | replace('_small', '')\n    |
+            replace('_large', '') }}"
+          schedule_entity: switch.schedule_{{ room_id }}_heating_schedule
+          slot: '{{ state_attr(schedule_entity, ''current_slot'') }}'
+          correct_preset: '{{ state_attr(schedule_entity, ''actions'')[slot | int].data.preset_mode
+            if slot is not none else ''activity'' }}'
+      - action: select.select_option
+        target:
+          entity_id: '{{ select_entity }}'
+        data:
+          option: external
+      - delay: 00:00:01
+      - if:
+        - condition: template
+          value_template: '{{ is_state_attr(vt_entity, ''preset_mode'', ''none'')
+            }}'
+        then:
+        - action: climate.set_preset_mode
+          target:
+            entity_id: '{{ vt_entity }}'
+          data:
+            preset_mode: '{{ correct_preset }}'
+      - delay: 00:00:01
+  mode: single
+- id: '1769345330226'
+  alias: 'Heating Conflict: Stuck TRV Valves'
+  description: Fixes TRV hangs by toggling hardware. Also ensures the Versatile  Thermostat
+    software is restored to 'heat' and its correct schedule.
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.heating_system_stuck_valves
+    to: 'on'
+  actions:
+  - variables:
+      offenders: '{{ state_attr(''binary_sensor.heating_system_stuck_valves'', ''stuck_entities'')
+        | default([], true) }}'
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: 'TRV valve stuck:'
+      message: 'TRV valve nudge performed: {% for t in offenders %} - {{ state_attr(t,
+        ''friendly_name'') | replace('' Radiator'', '''') }}{% endfor %}'
+      data:
+        priority: high
+        ttl: 0
+        tag: stuck_valve_failure
+  - repeat:
+      for_each: '{{ offenders }}'
+      sequence:
+      - variables:
+          trv: '{{ repeat.item }}'
+          room_id: "{{ trv.split('.')[1]\n    | replace('_versatile_thermostat', '')\n
+            \   | replace('_radiator', '')\n    | replace('_small', '')\n    | replace('_large',
+            '') }}"
+          vt_entity: climate.{{ room_id }}_versatile_thermostat
+          schedule_entity: switch.schedule_{{ room_id }}_heating_schedule
+          slot: '{{ state_attr(schedule_entity, ''current_slot'') }}'
+          correct_preset: '{{ state_attr(schedule_entity, ''actions'')[slot | int].data.preset_mode
+            if slot is not none else ''activity'' }}'
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: '{{ trv }}'
+        data:
+          hvac_mode: 'off'
+      - delay: 00:00:05
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: '{{ trv }}'
+        data:
+          hvac_mode: heat
+      - delay: 00:00:05
+      - action: climate.set_hvac_mode
+        target:
+          entity_id: '{{ vt_entity }}'
+        data:
+          hvac_mode: heat
+      - delay: 00:00:05
+      - action: climate.set_preset_mode
+        target:
+          entity_id: '{{ vt_entity }}'
+        data:
+          preset_mode: '{{ correct_preset }}'
+  - delay: 00:10:00
+  - if:
+    - condition: state
+      entity_id: binary_sensor.heating_system_stuck_valves
+      state: 'on'
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: '⚠️ CRITICAL: Valve Hardware Failure'
+        message: 'Kickstart failed. The following TRVs are still stuck after a reset:
+          {% for t in offenders %} - {{ state_attr(t, ''friendly_name'') | replace(''
+          Radiator'', '''') }}{% endfor %}'
+        data:
+          priority: high
+          ttl: 0
+          tag: stuck_valve_failure
+- id: '1769871187755'
+  alias: 'Heating Conflict: Versatile Thermostat Desync'
+  description: Handles Software Desyncs (Reload VT Integration).
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.heating_system_software_desync
+    to: 'on'
+  actions:
+  - action: logbook.log
+    data:
+      name: Heating Supervisor
+      message: Software Desync detected for {{ state_attr('binary_sensor.heating_system_software_desync',
+        'stuck_vts') }}. Reloading VT Integration.
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: '⚠️ CRITICAL: VT Software Desync'
+      message: 'Software desync detected for VT: {{ state_attr(''binary_sensor.heating_system_software_desync'',
+        ''stuck_vts'') }}'
+      data:
+        priority: high
+        ttl: 0
+        tag: stuck_vt
+  - action: versatile_thermostat.reload
+    data: {}
+- id: '1769967860837'
+  alias: Bedroom Light Auto-Off
+  description: ''
+  use_blueprint:
+    path: Blackshome/manual-light.yaml
+    input:
+      trigger_input:
+      - light.bedroom_light
+      time_delay:
+        hours: 1
+        minutes: 0
+        seconds: 0
+      include_motion_trigger: enable_motion_trigger
+      motion_trigger: binary_sensor.bedroom_motion_sensor_occupancy
+      bypass_lights_stop:
+      - input_boolean.suspend_automation_of_lighting_current_bypass
+      include_bypass:
+      - bypass_enabled_stop
+- id: '1749905576230'
+  alias: Dishwasher tracking
+  description: ''
+  use_blueprint:
+    path: Blackshome/appliance-notifications.yaml
+    input:
+      power_sensor: sensor.tapo_pm14_dishwasher_current_consumption
+      end_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      - ff859ed65b119ce2a3e073a4cfa3f3cb
+      end_message_title: Dishwasher
+      end_message: The dishwasher has finished
+      include_power_tracking: enable_power_tracking
+      start_notify_device:
+      - 1dc9b847cc323922605b2ed8175088b8
+      include_start_notify: disable_start_notify_options
+      end_time_delay: 1
+      end_appliance_power: 2
+      start_title: Dishwasher
+      include_end_notify: enable_end_notify_options
+      start_power_consumption: input_number.dishwasher_kwh_start
+      end_power_consumption: input_number.dishwasher_kwh_end
+      power_consumption_sensor: sensor.tapo_pm14_dishwasher_this_month_s_consumption
+      include_runtime_tracking: enable_runtime_tracking
+      include_duration_tracking: enable_duration_tracking
+      include_cycle_counter: enable_cycle_counter
+      cycle_counter_helper: counter.dishwasher_cycles
+      service_reminder_cycles: 30
+      service_reminder_end_message: ⚠️ It's time to clean the filter!
+      include_service_reminder: enable_service_reminder_and_notify
+      service_reminder_counter_helper: counter.dishwasher_service_reminder
+      include_custom_actions:
+      - enable_end_custom_actions
+      - enable_start_custom_actions
+      end_custom_actions:
+      - condition: time
+        after: 06:00:00
+        before: '21:30:00'
+      - action: script.unified_tts_announcement_ma_sonos_native
+        metadata: {}
+        data:
+          target_players:
+            device_id: caf8334fdaf279dec5de717beac23f94
+          message: The dishwasher has finished its cycle
+          announcement_volume: 0.6
+      include_time: time_enabled
+      before_time: '21:30:00'
+      after_time: 06:00:00
+      include_device_tracker:
+      - zone_start
+      - zone_end
+      notify_zone: zone.home
+      include_run_status: run_status_enabled
+      run_status_end: Finished
+      run_status_start: Running
+      run_status_entity: input_select.dishwasher_status
+      watchdog_timeframe:
+        hours: 3
+        minutes: 0
+        seconds: 0
+      watchdog_notify_device: []
+      start_time_delay: 1
+      running_dead_zone: 5
+      service_reminder_time_end_message: ⚠️ It's time to run the Machine Care programme!
+      service_reminder_time_threshold:
+        hours: 100
+        minutes: 0
+        seconds: 0
+      include_time_service_reminder: disable_time_service_reminder
+      runtime_tracking_helper: input_text.dishwasher_duration
+      start_appliance_power: 5
+      start_custom_actions:
+      - alias: Reset Dishwasher duration
+        action: input_text.set_value
+        metadata: {}
+        data:
+          value: 00:00:00
+        target:
+          entity_id:
+          - input_text.dishwasher_duration
+- id: '1771160036696'
+  alias: Dishwasher - status updates between cycles
+  description: ''
+  triggers:
+  - trigger: state
+    entity_id:
+    - binary_sensor.403090530466020356_bsh_common_status_doorstate
+    from:
+    - 'off'
+    to:
+    - 'on'
+    id: opened
+  - trigger: state
+    entity_id:
+    - binary_sensor.403090530466020356_bsh_common_status_doorstate
+    from:
+    - 'on'
+    id: closed
+    to:
+    - 'off'
+  conditions:
+  - condition: state
+    entity_id: sensor.403090530466020356_bsh_common_status_operationstate
+    state:
+    - BSH.Common.EnumType.OperationState.Ready
+  - condition: not
+    conditions:
+    - condition: state
+      entity_id: input_select.dishwasher_status
+      state:
+      - Cleaning required
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - opened
+      - condition: state
+        entity_id: input_select.dishwasher_status
+        state:
+        - Finished
+      sequence:
+      - if:
+        - condition: state
+          entity_id: input_select.dishwasher_status
+          state:
+          - Finished
+          for:
+            hours: 0
+            minutes: 20
+            seconds: 0
+        then:
+        - action: input_select.select_option
+          metadata: {}
+          target:
+            entity_id: input_select.dishwasher_status
+          data:
+            option: Unload/Reload
+        else:
+        - action: input_select.select_option
+          metadata: {}
+          target:
+            entity_id: input_select.dishwasher_status
+          data:
+            option: Release Steam
+        - delay:
+            hours: 0
+            minutes: 10
+            seconds: 0
+            milliseconds: 0
+        - action: input_select.select_option
+          metadata: {}
+          target:
+            entity_id: input_select.dishwasher_status
+          data:
+            option: Unload/Reload
+    - conditions:
+      - condition: trigger
+        id:
+        - closed
+      sequence:
+      - action: input_select.select_option
+        metadata: {}
+        target:
+          entity_id: input_select.dishwasher_status
+        data:
+          option: Not running
+  mode: single
+- id: '1739627400000'
+  alias: Liz's Bedside Button
+  description: 'Short press: toggle time for bed scene. Long press: toggle bedroom
+    light.'
+  triggers:
+  - domain: mqtt
+    device_id: 9349c50977a1403572bc50e2765b84cd
+    type: action
+    subtype: single
+    trigger: device
+    id: single
+  - domain: mqtt
+    device_id: 9349c50977a1403572bc50e2765b84cd
+    type: action
+    subtype: hold
+    trigger: device
+    id: hold
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: trigger
+        id:
+        - single
+      sequence:
+      - if:
+        - condition: state
+          entity_id: light.bedside_light
+          state: 'on'
+        then:
+        - action: light.turn_off
+          metadata: {}
+          data: {}
+          target:
+            entity_id: light.bedside_light
+        else:
+        - action: scene.turn_on
+          metadata: {}
+          data: {}
+          target:
+            entity_id: scene.bedside_light_reading_in_bed_duplicate
+    - conditions:
+      - condition: trigger
+        id:
+        - hold
+      sequence:
+      - action: light.toggle
+        metadata: {}
+        data: {}
+        target:
+          entity_id: light.bedroom_light
+  mode: single
+- alias: TRV Firmware Update Detected
+  description: 'Alerts when a TRV firmware update installs and checks whether Smart
+    Temperature Control or temperature sensor source has been reset to default.
+
+    '
+  trigger:
+  - platform: state
+    entity_id:
+    - update.dining_radiator
+    - update.kitchen_radiator
+    - update.snug_radiator
+    - update.study_radiator
+    - update.lounge_radiator_small
+    - update.lounge_radiator_large
+    attribute: installed_version
+  condition:
+  - condition: template
+    value_template: "{{ trigger.from_state.attributes.installed_version is not none\n
+      \  and trigger.from_state.attributes.installed_version not in ['unknown', 'unavailable']\n
+      \  and trigger.to_state.attributes.installed_version is not none\n   and trigger.to_state.attributes.installed_version
+      not in ['unknown', 'unavailable']\n   and trigger.from_state.attributes.installed_version
+      != trigger.to_state.attributes.installed_version }}\n"
+  action:
+  - variables:
+      base_id: '{{ trigger.entity_id | replace(''update.'', '''') }}'
+      trv_name: '{{ trigger.entity_id | replace(''update.'', '''') | replace(''_'',
+        '' '') | title }}'
+      new_version: '{{ state_attr(trigger.entity_id, ''installed_version'') }}'
+      smart_pid_enabled: '{{ states(''number.'' + trigger.entity_id | replace(''update.'',
+        '''') + ''_temperature_accuracy'') == ''unavailable'' }}'
+      sensor_reverted: '{{ states(''select.'' + trigger.entity_id | replace(''update.'',
+        '''') + ''_temperature_sensor_select'') == ''internal'' }}'
+  - action: persistent_notification.create
+    data:
+      title: 'TRV Firmware Updated: {{ trv_name }}'
+      message: '**{{ trv_name }}** has been updated to firmware version **{{ new_version
+        }}**.
+
+        {% if smart_pid_enabled %} ⚠️ **Smart Temperature Control is re-enabled**
+        — disable it in Zigbee2MQTT to restore Versatile Thermostat control. {% endif
+        %} {% if sensor_reverted %} ⚠️ **Temperature sensor has reverted to Internal**
+        — set it back to External in Zigbee2MQTT. {% endif %} {% if not smart_pid_enabled
+        and not sensor_reverted %} ✅ Settings appear correct — no action needed. {%
+        endif %}
+
+        '
+      notification_id: trv_firmware_{{ trigger.entity_id | replace('update.', '')
+        }}
+  mode: parallel
+  max: 7
+  id: 138b1e8046e5472fb4fd4336fa1cffad
+- id: '1769000000001'
+  alias: 'Heating Conflict: Orphan Boiler Reset'
+  description: 'Resets Tado to 12°C when the central boiler is on but no VT is calling
+    for heat. Suppressed if stuck valves are already being handled by their own automation.
+
+    '
+  triggers:
+  - trigger: state
+    entity_id: binary_sensor.heating_system_orphan_boiler
+    to: 'on'
+  conditions:
+  - condition: state
+    entity_id: binary_sensor.heating_system_stuck_valves
+    state: 'off'
+  actions:
+  - action: notify.persistent_notification
+    data:
+      title: Heating Sync Error
+      message: Boiler is ON but no VT is calling for heat. Resetting Tado to 12°C...
+      notification_id: orphan_boiler
+  - action: notify.mobile_app_pixel_9_pro_xl
+    data:
+      title: Orphan Boiler Detected
+      message: 'Boiler has been running for 5+ minutes with no VT requesting heat.
+        Resetting Tado to 12°C now.
+
+        '
+  - action: climate.set_temperature
+    target:
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+    data:
+      temperature: 12
+      hvac_mode: heat
+  - delay: 00:00:30
+  - if:
+    - condition: template
+      value_template: '{{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+        ''temperature'') | float <= 12 }}
+
+        '
+    then:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Orphan Boiler: Fixed'
+        message: Tado successfully reset to 12°C. Boiler should now stop.
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: orphan_boiler
+    else:
+    - action: notify.mobile_app_pixel_9_pro_xl
+      data:
+        title: 'Orphan Boiler: FAILED'
+        message: 'CRITICAL: Tado is still at {{ state_attr(''climate.tado_smart_thermostat_ru2393140992'',
+          ''temperature'') }}°C after reset attempt. Manual intervention required.
+
+          '
+        data:
+          priority: high
+          clickAction: /lovelace-thermostat
+  mode: single

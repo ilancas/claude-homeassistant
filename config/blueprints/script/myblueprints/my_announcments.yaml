@@ -1,0 +1,78 @@
+blueprint:
+  name: Cloud TTS Multi-Speaker Announcement
+  description: >
+    Speak an announcement on one or more media players using
+    Home Assistant Cloud TTS. Includes dropdown list of British
+    English Azure Neural voices.
+    Volume set by Media Assitant for it's entities
+    Volume set by slider in this blueprint for Sonos integration entities
+  domain: script
+  input:
+    target_players:
+      name: Media players
+      selector:
+        target:
+          entity:
+            domain: media_player
+      description: Select one or more media players for the announcement.
+    announcement_text:
+      name: Announcement text
+      description: What should be spoken?
+      selector:
+        text: {}
+    language:
+      name: Language
+      description: Language tag
+      default: en-GB
+      selector:
+        text: {}
+    voice:
+      name: Voice
+      description: Select a British English Azure TTS voice.
+      default: AbbiNeural
+      selector:
+        select:
+          options:
+            - AbbiNeural
+            - AlfieNeural
+            - BellaNeural
+            - EllieNeural
+            - EthanNeural
+            - HollyNeural
+            - NoahNeural
+            - OliverNeural
+            - PhoebeNeural
+            - ThomasNeural
+            - LibbyNeural
+            - MiaNeural
+            - RyanNeural
+            - SoniaNeural
+    announcement_volume:
+      name: Announcement Volume (Optional)
+      description: >
+        Volume level (0.2 to 1.0, where 1.0 is max). If left blank,
+        the media player's default announcement volume will be used.
+      default: "0.6"
+      selector:
+        number:
+          min: 0.1
+          max: 1.0
+          step: 0.1 # Optional: Adds finer control steps (e.g., 0.20, 0.25, 0.30...)
+          mode: slider # <-- SLIDER MODE ENABLED
+          unit_of_measurement: "x" # Optional: Indicates it's a multiplier/ratio
+variables:
+  announcement_text: !input announcement_text
+  language: !input language
+  voice: !input voice
+  announcement_volume: !input announcement_volume
+sequence:
+  - action: media_player.play_media
+    target: !input target_players
+    data:
+      announce: true
+      media_content_id: >-
+        media-source://tts/tts.home_assistant_cloud?message={{ announcement_text | urlencode }}&language={{ language }}&voice={{ voice }}
+      media_content_type: audio/mp3
+      extra:
+        volume: '{{ (announcement_volume | float * 100) | round(0) | int }}'
+mode: parallel

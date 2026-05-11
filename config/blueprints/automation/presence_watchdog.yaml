@@ -1,0 +1,233 @@
+blueprint:
+  name: Presence & Motion Master Watchdog (v4.2 - Final Fixed)
+  description: |
+    Detects stuck sensors. Includes a PIR-based snooze check and a 3-try healing loop.
+  domain: automation
+  input:
+    presence_sensor:
+      name: Primary Sensor (mmWave or Motion)
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: [occupancy, motion]
+    secondary_sensor:
+      name: Secondary Sensor (Optional PIR)
+      default: 
+      selector:
+        entity:
+          domain: binary_sensor
+          device_class: [occupancy, motion]
+    bypass_switch:
+      name: Automation Bypass Switch (Optional)
+      default: input_boolean.suspend_automation_of_lighting_current_bypass
+      selector:
+        entity:
+          domain: [input_boolean, binary_sensor]
+    watchdog_timer:
+      name: Timer Helper (Required)
+      selector:
+        entity:
+          domain: timer
+    max_on_time:
+      name: Maximum Continuous ON Time (Default 60m)
+      default: "01:00:00"
+      selector:
+        duration: {}
+    secondary_clear_time:
+      name: Secondary Inactivity (Default 30m)
+      default: "00:30:00"
+      selector:
+        duration: {}
+    recheck_delay:
+      name: Re-check Delay
+      description: Wait time between healing attempts (e.g. 90s to cover sensor off-delay).
+      default: "00:01:30"
+      selector:
+        duration: {}
+    mmwave_sensitivity_select:
+      name: Sensitivity Select (Optional)
+      default: 
+      selector:
+        entity:
+          domain: select
+    target_area:
+      name: Area to Control (Optional)
+      default: 
+      selector:
+        area: {}
+    notify_service: 
+      name: Notification Service
+      default: notify.persistent_notification
+      selector:
+        text: {}
+
+mode: restart
+
+triggers:
+  - trigger: state
+    entity_id: !input presence_sensor
+    to: "on"
+    id: "primary_on"
+  - trigger: state
+    entity_id: !input presence_sensor
+    to: "off"
+    id: "primary_off"
+  - trigger: event
+    event_type: timer.finished
+    event_data:
+      entity_id: !input watchdog_timer
+    id: "watchdog_trigger"
+
+variables:
+  primary: !input presence_sensor
+  secondary: !input secondary_sensor
+  sensitivity_entity: !input mmwave_sensitivity_select
+  area_target: !input target_area
+  bypass: !input bypass_switch
+  sec_clear_input: !input secondary_clear_time
+  sec_clear_dur: >
+    {{ (sec_clear_input.hours | default(0) | int * 3600) + 
+       (sec_clear_input.minutes | default(0) | int * 60) + 
+       (sec_clear_input.seconds | default(0) | int) }}
+
+action:
+  - condition: template
+    value_template: "{{ is_state(bypass, 'off') }}"
+
+  - choose:
+      # 1. START TIMER when primary turns ON
+      - conditions:
+          - condition: trigger
+            id: "primary_on"
+        sequence:
+          - action: timer.start
+            target:
+              entity_id: !input watchdog_timer
+            data:
+              duration: !input max_on_time
+
+      # 2. CANCEL TIMER when primary turns OFF (and secondary is also OFF or not provided)
+      - conditions:
+          - condition: trigger
+            id: "primary_off"
+          - condition: template
+            value_template: "{{ secondary is none or secondary == '' or is_state(secondary, 'off') }}"
+        sequence:
+          - action: timer.cancel
+            target:
+              entity_id: !input watchdog_timer
+
+      # 3. WATCHDOG EVALUATION when timer finishes
+      - conditions:
+          - condition: trigger
+            id: "watchdog_trigger"
+          - condition: template
+            value_template: "{{ is_state(primary, 'on') }}"
+        sequence:
+          - variables:
+              recent_activity: >
+                {% if secondary is not none and secondary != '' and states(secondary) not in ['unknown', 'unavailable'] %}
+                  {% set last = as_timestamp(states[secondary].last_changed, 0) %}
+                  {% set now_ts = as_timestamp(now()) %}
+                  {{ is_state(secondary, 'on') or (now_ts - last) < sec_clear_dur }}
+                {% else %}
+                  false
+                {% endif %}
+
+          - choose:
+              # 4a. SNOOZE if there's recent secondary activity
+              - conditions:
+                  - condition: template
+                    value_template: "{{ recent_activity }}"
+                sequence:
+                  - action: timer.start
+                    target:
+                      entity_id: !input watchdog_timer
+                    data:
+                      duration: !input secondary_clear_time
+
+            # 4b. HEAL - default branch when no recent activity
+            default:
+              # Healing loop - try up to 3 times
+              - repeat:
+                  while:
+                    - condition: template
+                      value_template: "{{ is_state(primary, 'on') and repeat.index <= 3 }}"
+                  sequence:
+                    - variables:
+                        has_sens: "{{ sensitivity_entity is not none and sensitivity_entity != '' }}"
+                        orig_sens: "{{ states(sensitivity_entity) if has_sens else 'N/A' }}"
+                        new_sens: >
+                          {% if has_sens %}
+                            {% set c = states(sensitivity_entity) | string | lower %}
+                            {% if 'high' in c or 'low' in c %} medium {% else %} high {% endif %}
+                          {% else %} N/A {% endif %}
+
+                    # Sensitivity nudge
+                    - if:
+                        - condition: template
+                          value_template: "{{ has_sens }}"
+                      then:
+                        - action: select.select_option
+                          target:
+                            entity_id: "{{ sensitivity_entity }}"
+                          data:
+                            option: "{{ new_sens }}"
+                        - delay: "00:00:03"
+                        - action: select.select_option
+                          target:
+                            entity_id: "{{ sensitivity_entity }}"
+                          data:
+                            option: "{{ orig_sens }}"
+
+                    # Safety actions - only on first iteration
+                    - if:
+                        - condition: template
+                          value_template: "{{ repeat.index == 1 }}"
+                      then:
+                        # Turn off lights if they exist
+                        - if:
+                            - condition: template
+                              value_template: "{{ area_target != '' and area_entities(area_target) | select('match', '^light\\.') | list | count > 0 }}"
+                          then:
+                            - action: light.turn_off
+                              target:
+                                area_id: !input target_area
+                        
+                        # Set climate to eco if it exists
+                        - if:   
+                            - condition: template
+                              value_template: "{{ area_target != '' and area_entities(area_target) | select('match', '^climate\\.') | list | count > 0 }}"
+                          then:
+                            - action: climate.set_preset_mode
+                              target:
+                                area_id: !input target_area
+                              data:
+                                preset_mode: eco
+
+                        # Action 3: Notification
+                        - action: !input notify_service
+                          data:
+                            title: "Watchdog Triggered: Stuck Sensor"
+                            message: >-
+                             Watchdog intervened for {{ state_attr(primary, 'friendly_name') or primary }}{% if secondary is not none and secondary != '' %} and {{ state_attr(secondary, 'friendly_name') or secondary }}{% endif %}.
+                             {% if has_sens %}
+                                Sensitivity cycled from {{ orig_sens }} to {{ new_sens }} to remove ghost. 
+                                {% endif %}
+                                {% if area_target is not none and area_target != '' %}
+                                Lights off and Climate set to eco in {{ area_name(area_target) }}.
+                                {% endif %}
+                            
+                    # Wait before next attempt (will not complete if already cleared > autumation has already restarted)
+                    - delay: !input recheck_delay
+
+              - condition: template
+                value_template: "{{ is_state(primary, 'on') }}"
+                
+                # Failure - sensor still stuck
+              - action: !input notify_service
+                data:
+                  title: "Watchdog CRITICAL: Sensor Still Stuck"
+                  message: >-
+                    {{ state_attr(primary, 'friendly_name') or primary }} is STILL ON after 3 healing attempts. 
+                    Manual intervention required{% if area_target != '' %} in {{ area_name(area_target) }}{% endif %}.

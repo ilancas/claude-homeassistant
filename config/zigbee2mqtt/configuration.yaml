@@ -1,0 +1,211 @@
+version: 5
+homeassistant:
+  enabled: true
+advanced:
+  network_key:
+    - 9
+    - 124
+    - 25
+    - 32
+    - 7
+    - 11
+    - 203
+    - 112
+    - 77
+    - 88
+    - 9
+    - 32
+    - 2
+    - 199
+    - 225
+    - 19
+  pan_id: 43627
+  ext_pan_id:
+    - 93
+    - 90
+    - 21
+    - 135
+    - 107
+    - 250
+    - 37
+    - 69
+  log_level: info
+  channel: 15
+  transmit_power: 20
+mqtt:
+  server: mqtt://core-mosquitto:1883
+  user: addons
+  password: '!secret.yaml mqtt_password'
+serial:
+  port: /dev/ttyACM0
+  adapter: ember
+  baudrate: 460800
+  rtscts: true
+frontend:
+  enabled: true
+  port: 8099
+devices:
+  '0x00178801099d6896':
+    friendly_name: Stairs Light
+  '0xa4c138b575e33265':
+    friendly_name: Landing Light
+  '0x00178801099d662f':
+    friendly_name: Hall Light
+    description: Hall lamp, normally on all night
+  '0x00178801099d5521':
+    friendly_name: Light three
+    description: Next to Ian's chair
+  '0x00178801099d4b87':
+    friendly_name: Light one
+    description: Next to lounge door
+  '0x70b3d52b60051343':
+    friendly_name: Freezer plug
+    measurement_poll_interval: 600
+  '0xa4c138de5dabb22a':
+    friendly_name: Study Peripherals plug
+    measurement_poll_interval: 600
+  '0x08ddebfffeadbe0b':
+    friendly_name: Snug presence sensor
+    no_occupancy_since:
+      - 125
+  '0xa4c13809860ae41a':
+    friendly_name: Snug power plug
+    current_precision: 2
+    measurement_poll_interval: 300
+  '0x8c65a3fffed549f0':
+    friendly_name: Study Radiator
+  '0x08ddebfffea45074':
+    friendly_name: Stair Light motion sensor
+  '0x08ddebfffed96cc9':
+    friendly_name: Study temperature sensor
+    temperature_precision: 2
+  '0x842712fffe38840f':
+    friendly_name: Snug Radiator
+  '0x1cc089fffe24ec77':
+    friendly_name: Snug Main Light relay
+  '0xa4c13800ba3b40d4':
+    friendly_name: Snug Lamp plug
+    measurement_poll_interval: 600
+  '0xa4c13895c7ae6f6f':
+    friendly_name: Bedroom Fan plug
+    measurement_poll_interval: 600
+  '0x44e2f8fffe0bc710':
+    friendly_name: 'Kitchen Radiator '
+  '0xd44867fffe25fcf0':
+    friendly_name: Dining temperature sensor
+    temperature_precision: 2
+    humidity_calibration: 0
+    humidity_precision: 2
+  '0x08b95ffffebab9c6':
+    friendly_name: Dining Light relay
+    state_action: false
+  '0x08b95ffffec5e428':
+    friendly_name: Garage Light relay
+  '0x08ddebfffea4da3c':
+    friendly_name: Garage Light motion sensor
+  '0x70b3d52b60101b3f':
+    friendly_name: Lounge Doorbell plug
+    measurement_poll_interval: 600
+  '0x44e2f8fffe0bc7d3':
+    friendly_name: Lounge Radiator (Small)
+  '0x8c65a3fffed59f81':
+    friendly_name: Lounge Radiator (Large)
+  '0x8c65a3fffed55f51':
+    friendly_name: Dining Radiator
+  '0x8c65a3fffee64cfb':
+    friendly_name: Hall presence sensor
+    no_occupancy_since:
+      - 125
+  '0x08ddebfffedcbbcd':
+    friendly_name: Kitchen presence sensor
+    availability: true
+    no_occupancy_since:
+      - 125
+  '0x08ddebfffe0ff1f8':
+    friendly_name: Dining presence sensor
+    no_occupancy_since:
+      - 125
+  '0x08ddebfffedcb553':
+    friendly_name: Study presence sensor
+    no_occupancy_since:
+      - 125
+  '0x70b3d52b601471ba':
+    friendly_name: Sonos 5
+    measurement_poll_interval: 600
+    power_calibration: 0
+    current_calibration: 0
+    voltage_calibration: 0
+    energy_calibration: 0
+    power_precision: 0
+  '0xfc4d6afffe8d2444':
+    friendly_name: Worktop Lights
+  '0xa4c138da26be6408':
+    friendly_name: Garage Door (L)
+  '0xa4c1388dc7ffec2b':
+    friendly_name: Patio Door
+  '0xa4c1384b272c9c96':
+    friendly_name: Dining Room motion sensor
+  '0xd44867fffe60d6fa':
+    friendly_name: Utility Water Leak
+  '0x187a3efffe334125':
+    friendly_name: Study Window
+  '0x54ef44100110d87d':
+    friendly_name: Landing Smoke Alarm
+  '0x001788010c368a0c':
+    friendly_name: Study Light
+    description: Study Ceiling Light
+  '0x001788010c36dc51':
+    friendly_name: Bedroom Light
+  '0xa4c138035b03ffff':
+    friendly_name: Front Door sensor
+  '0xa4c138ed9a2ac36f':
+    friendly_name: Study Button
+  '0xa4c138036e14ffff':
+    friendly_name: Study Motion sensor
+  '0xa4c1380340a9ffff':
+    friendly_name: Bedroom Motion sensor
+  '0xa4c138a4735bdbaa':
+    friendly_name: Bedside Button
+  '0x70b3d52b601ac6ae':
+    friendly_name: Dining Sonos Plug
+  '0x70b3d52b601ac782':
+    friendly_name: Dyson charger plug
+  '0xa4c1385c5a43a010':
+    friendly_name: Guest Bedroom Temperature sensor
+    temperature_calibration: 0.3
+  '0xa4c1385a135a6312':
+    friendly_name: Kitchen Sink Water Leak
+  '0xa4c138ceaca2d2c8':
+    friendly_name: Garage Temperature sensor
+    temperature_precision: 1
+    humidity_precision: 1
+    temperature_calibration: 0
+    humidity_calibration: 5.5
+  '0xa4c138023998aa03':
+    friendly_name: Bedroom Radiator
+  '0xa4c1381f4eaa90ef':
+    friendly_name: Synology plug
+  '0xa4c138d774279cc7':
+    friendly_name: Router plug
+  '0xa4c1384c0a8fffab':
+    friendly_name: Kitchen Door Plug
+  '0xa4c138501d706e5d':
+    friendly_name: Bedroom Lamp plug
+  '0xa4c138226d21a627':
+    friendly_name: Snug Motion sensor
+  '0xa4c138920a32a933':
+    friendly_name: Garage Motion sensor (back door)
+  '0xa4c138032e11ffff':
+    friendly_name: Garage Door (R)
+  '0x70b3d52b60050d63':
+    friendly_name: Dining Table Lamp Plug
+  '0xa4c138964761a346':
+    friendly_name: Liz's Bedside Button
+availability:
+  enabled: true
+  active:
+    enabled: true
+    timeout: 10
+  passive:
+    timeout: 1500
+backoff: false

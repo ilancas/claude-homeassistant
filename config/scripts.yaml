@@ -1,0 +1,772 @@
+test_script:
+  sequence:
+  - action: media_player.unjoin
+    metadata: {}
+    data: {}
+    target:
+      entity_id: media_player.lounge
+  - if:
+    - condition: state
+      entity_id: switch.tapo_pm1_lounge_tv
+      state: 'off'
+    then:
+    - type: turn_on
+      device_id: dd0f4495583d90b48ab9e14f7fc374c3
+      entity_id: 84621cfb44e3a155f4a1a2f1e75daffb
+      domain: switch
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 30
+        milliseconds: 0
+  - action: wake_on_lan.send_magic_packet
+    data:
+      mac: e0:03:6b:d9:21:bc
+  - action: remote.turn_on
+    metadata: {}
+    data: {}
+    target:
+      device_id: 57d31f7cd712a53a5036a87becbe6f1e
+  alias: TV On
+  description: Turns the TV on; lounge lights on if near sunset; 30%
+tv_off:
+  sequence:
+  - action: remote.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: remote.samsung_s95ca_55
+  alias: TV Off
+  description: ''
+bedtime:
+  sequence:
+  - action: input_boolean.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.bedroom_light_bypass
+  - action: input_boolean.turn_off
+    metadata: {}
+    target:
+      entity_id: input_boolean.lounge_lights_presence_bypass
+    data: {}
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 60
+    target:
+      entity_id: light.landing_stairs_lights
+  - action: automation.trigger
+    metadata: {}
+    data:
+      skip_condition: true
+    target:
+      entity_id: automation.new_automation_2
+  - action: script.snug_oil_heater_turn_off
+    metadata: {}
+    data: {}
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.heating_system_on
+  - action: media_player.play_media
+    data:
+      media:
+        media_content_id: FV:2/1
+        media_content_type: favorite_item_id
+        metadata:
+          title: Classic FM
+          thumbnail: https://dtu8ldmaopof3.cloudfront.net/i/b64aHR0cDovL2hlcmFsZC5tdXNpY3JhZGlvLmNvbS9tZWRpYS9iNjU1ZDQ2Ny1mMWY1LTQ3ODQtOGViOC1hNDJlMWQ4MTAxY2YucG5n_300.jpg
+          media_class: genre
+          children_media_class:
+          navigateIds:
+          - {}
+          - media_content_type: favorites
+            media_content_id: ''
+          - media_content_type: favorites_folder
+            media_content_id: object.item.audioItem.audioBroadcast
+    enabled: true
+    target:
+      device_id: 5f1cbd5793f163e2f6ae731ddc5d7769
+  - action: input_boolean.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: input_boolean.reading_mode
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: light.turn_off
+    metadata: {}
+    data:
+      transition: 10
+    target:
+      entity_id:
+      - light.lounge_lights
+      - light.floor_lamp
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.floor_lamp_power_switch
+    data: {}
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.bedside_light_reading_in_bed_duplicate
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.worktop_lights
+  - action: script.ds418play_shutdown
+    metadata: {}
+    data: {}
+  - delay:
+      hours: 0
+      minutes: 5
+      seconds: 0
+      milliseconds: 0
+  - condition: state
+    entity_id: light.bedside_light
+    state: 'on'
+  - action: scene.turn_on
+    metadata: {}
+    data: {}
+    target:
+      entity_id: scene.bedside_light_reading_in_bed
+  alias: Bedtime
+  description: Turn TV and lights off; hall light on; upstairs lights on
+lights_for_dinner_2:
+  sequence:
+  - if:
+    - condition: state
+      entity_id: switch.dining_light_relay
+      state: 'off'
+    then:
+    - action: switch.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.dining_light_relay
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 5
+        milliseconds: 0
+  - action: light.turn_on
+    metadata: {}
+    data:
+      transition: 2
+      color_temp_kelvin: 2000
+      brightness_pct: 1
+    target:
+      entity_id: light.dining_ceiling_light
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.dining_corner_lamp
+    data:
+      brightness_pct: 90
+    enabled: true
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 30
+      color_temp_kelvin: 2520
+      transition: 2
+    target:
+      entity_id: light.dining_lamp
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.tuya_pm11_dining_cabinet_socket_1
+    data: {}
+  alias: Lights for dinner
+  description: ''
+play_radio_5_live_on_bedroom_sonos:
+  alias: Play Radio 5 Live on Kitchen Sonos
+  sequence:
+  - data:
+      media:
+        media_content_id: FV:2/0
+        media_content_type: favorite_item_id
+        metadata: {}
+    action: media_player.play_media
+    target:
+      entity_id: media_player.sonos_kitchen
+  - action: media_player.volume_set
+    metadata: {}
+    data:
+      volume_level: 0.4
+    target:
+      entity_id: media_player.sonos_kitchen
+  mode: single
+play_radio_5_live_on_bedroom_sonos_2:
+  alias: Play Radio 5 Live on Bedroom Sonos
+  sequence:
+  - target:
+      entity_id: media_player.bedroom
+    data:
+      media_content_type: favorite_item_id
+      media_content_id: FV:2/0
+    action: media_player.play_media
+  - action: media_player.volume_set
+    metadata: {}
+    data:
+      volume_level: 0.3
+    target:
+      entity_id: media_player.bedroom
+  mode: single
+  description: ''
+  icon: mdi:radio
+goodnight:
+  sequence:
+  - if:
+    - alias: IF bedroom light bypass ON then meant Bedtime not goodnight
+      condition: state
+      entity_id: input_boolean.bedroom_light_bypass
+      state:
+      - 'off'
+    then:
+    - action: script.bedtime
+      metadata: {}
+      data: {}
+    else:
+    - action: input_boolean.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+        - input_boolean.landing_light_on_bypass
+    - action: automation.trigger
+      metadata: {}
+      data:
+        skip_condition: true
+      target:
+        entity_id: automation.new_automation_2
+    - action: media_player.media_stop
+      metadata: {}
+      data: {}
+      target:
+        entity_id: media_player.bedroom
+    - action: input_boolean.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.night_lights_mode
+    - action: scene.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: scene.bedside_light_night_reading
+    - action: input_boolean.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: input_boolean.bedroom_light_bypass
+    - action: light.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+        - light.snug_lamp
+        - light.snug_main_light_relay
+        - light.worktop_lights
+        - light.lounge_lights
+    - action: switch.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id: switch.plugs_off_overnight
+    - delay:
+        hours: 0
+        minutes: 0
+        seconds: 2
+        milliseconds: 0
+    - action: light.turn_off
+      metadata: {}
+      data: {}
+      target:
+        entity_id:
+        - light.bedside_light
+        - light.bedroom_light
+    - action: script.unified_tts_announcement_ma_sonos_native
+      data:
+        message: Goodnight. Pleasant dreams
+        announcement_volume: 0.4
+        target_players:
+          entity_id:
+          - media_player.sonos_bedroom
+    - action: switch.turn_off
+      metadata: {}
+      target:
+        entity_id: switch.tapo_pm1_lounge_tv
+      data: {}
+  - action: script.unified_tts_announcement_ma_sonos_native
+    metadata: {}
+    data:
+      target_players:
+        device_id: media_player.sonos_bedroom
+      message: Goodnight. Pleasant dreams
+      announcement_volume: 0.6
+  alias: Goodnight
+  description: ''
+  icon: mdi:chat-sleep-outline
+play_radio_5_live_on_bedroom_sonos_3:
+  sequence:
+  - data:
+      media:
+        media_content_id: FV:2/0
+        media_content_type: favorite_item_id
+        metadata: {}
+    action: media_player.play_media
+    target:
+      device_id: 5f1cbd5793f163e2f6ae731ddc5d7769
+  - action: media_player.volume_set
+    metadata: {}
+    data:
+      volume_level: 0.3
+    target:
+      entity_id:
+      - media_player.sonos_bedroom
+  alias: Play Radio 5 Live on Bedroom Sonos
+  mode: single
+  description: ''
+reset_central_heating_controls_to_on_comfort:
+  alias: Reset Central Heating Controls to ON/ECO
+  description: ''
+  sequence:
+  - alias: If outside temperature is < 7C and Season is 'Summer' then set Season to
+      'Winter' for today
+    if:
+    - condition: template
+      value_template: '  {{ states(''sensor.outside_temperature'') | float < 7 and
+        is_state(''input_select.season'', ''Summer'') }}'
+    then:
+    - action: input_select.select_option
+      metadata: {}
+      data:
+        option: Winter
+      target:
+        entity_id: input_select.season
+  - action: climate.set_temperature
+    metadata: {}
+    target:
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+    data:
+      hvac_mode: heat
+      temperature: 12
+    alias: Climate Set HVAC mode Heat and Target Temperature to 12 degrees
+    enabled: false
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+    enabled: false
+  - action: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: heat
+    target:
+      label_id: radiators
+    enabled: false
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - action: select.select_option
+    metadata: {}
+    data:
+      option: Heat only
+    target:
+      entity_id: select.central_mode
+    enabled: false
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 3
+      milliseconds: 0
+  - action: scheduler.disable_all
+    metadata: {}
+    data: {}
+  - action: scheduler.enable_all
+    metadata: {}
+    data: {}
+  mode: single
+turn_off_all_dining_room_lights:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    data:
+      transition: 1
+      color_temp_kelvin: 5999
+      brightness_pct: 100
+    target:
+      entity_id: light.dining_lamp
+  - action: light.turn_on
+    metadata: {}
+    data:
+      brightness_pct: 100
+      color_temp_kelvin: 6008
+      transition: 0
+    target:
+      entity_id: light.dining_ceiling_light
+  - action: input_boolean.turn_off
+    target:
+      entity_id:
+      - input_boolean.dining_light_off_bypass
+    data: {}
+  - action: switch.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: switch.tuya_pm11_dining_cabinet
+  - action: light.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id:
+      - light.dining_ceiling_light
+      - light.dining_lamp
+      - light.dining_corner_lamp
+  alias: Turn OFF all Dining Room Lights
+  description: ''
+turn_off_heating:
+  sequence:
+  - action: select.select_option
+    metadata: {}
+    data:
+      option: Frost protection
+    target:
+      entity_id: select.central_mode
+  - action: climate.set_preset_mode
+    metadata: {}
+    data:
+      preset_mode: frost
+    target:
+      entity_id:
+      - climate.snug_heater_versatile_thermostat
+  - action: climate.set_preset_mode
+    metadata: {}
+    target:
+      entity_id: climate.bedroom_radiator
+    data:
+      preset_mode: antifrost
+  - action: climate.set_temperature
+    metadata: {}
+    data:
+      temperature: 12
+      hvac_mode: heat
+    target:
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+    alias: Explicit Tado reset to 12°C (safety belt in case VT central boiler management
+      doesn't fire)
+  alias: Turn OFF Heating
+  description: ''
+heating_on:
+  sequence:
+  - if:
+    - condition: state
+      entity_id: climate.tado_smart_thermostat_ru2393140992
+      state:
+      - 'off'
+    then:
+    - action: climate.turn_on
+      metadata: {}
+      data: {}
+      target:
+        entity_id: climate.tado_smart_thermostat_ru2393140992
+  - action: select.select_option
+    metadata: {}
+    data:
+      option: Heat only
+    target:
+      entity_id: select.central_mode
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: climate.set_hvac_mode
+    metadata: {}
+    data:
+      hvac_mode: heat
+    target:
+      label_id: radiators
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 5
+      milliseconds: 0
+  - action: scheduler.disable_all
+    metadata: {}
+    data: {}
+  - action: scheduler.enable_all
+    metadata: {}
+    data: {}
+  alias: Turn ON Heating
+  description: ''
+play_radio_5_sports_extra_on_kitchen_sonos:
+  sequence:
+  - data:
+      media:
+        media_content_id: FV:2/3
+        media_content_type: favorite_item_id
+        metadata: {}
+    action: media_player.play_media
+    target:
+      entity_id: media_player.sonos_kitchen
+  - action: media_player.volume_set
+    metadata: {}
+    data:
+      volume_level: 0.4
+    target:
+      entity_id: media_player.sonos_kitchen
+  alias: Play Sports Extra on Kitchen Sonos
+  mode: single
+  description: ''
+ds418play_shutdown:
+  sequence:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_state(''update.ds418play_dsm_update'', ''unavailable'')
+          }}'
+      sequence:
+      - action: button.press
+        data: {}
+        target:
+          entity_id: button.ds418play_shutdown
+        continue_on_error: true
+  alias: DS418play Shutdown
+  description: ''
+turn_on_front_door_motion_detection:
+  sequence:
+  - repeat:
+      sequence:
+      - type: turn_on
+        device_id: ec47d01c842e9f2af2a41a17a8f90e97
+        entity_id: 1fb83e95114243f2b703fe63823e27e8
+        domain: switch
+        continue_on_error: true
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 15
+          milliseconds: 0
+      until:
+      - condition: template
+        value_template: '{{ is_state(''switch.front_door_motion_detection'', ''on'')
+          or repeat.index == 5 }}'
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: '{{ not is_state(''switch.front_door_motion_detection'', ''on'')
+          }}'
+      sequence:
+      - data:
+          title: Ring Motion Detection Issue
+          message: Failed to turn on Front Door Motion Detection after multiple attempts.
+            The switch entity might not be updating, or the Ring API is unreachable.
+            Check Ring integration and logs.
+        action: persistent_notification.create
+      - data:
+          message: Automation 'Ring Motion Detection' failed after all retries. Check
+            switch.front_door_motion_detection state and Ring integration health.
+          level: error
+        action: system_log.write
+  alias: Turn ON Front Door motion detection
+  description: ''
+  icon: mdi:camera-off-outline
+turn_off_front_door_motion_detection:
+  sequence:
+  - condition: state
+    state:
+    - 'off'
+    entity_id: input_boolean.holiday_mode
+  - repeat:
+      sequence:
+      - type: turn_off
+        device_id: ec47d01c842e9f2af2a41a17a8f90e97
+        entity_id: 1fb83e95114243f2b703fe63823e27e8
+        domain: switch
+      - delay:
+          hours: 0
+          minutes: 0
+          seconds: 1
+          milliseconds: 0
+      until:
+      - condition: template
+        value_template: '{{ is_state(''switch.front_door_motion_detection'', ''off'')
+          or repeat.index == 20 }}'
+  alias: Turn OFF Front Door motion detection
+  description: ''
+  icon: mdi:camera-off-outline
+snug_oil_heater_turn_off:
+  sequence:
+  - action: climate.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.snug_heater_versatile_thermostat
+  alias: Snug Oil Heater - Turn OFF
+  description: ''
+coffee_machine_announce_it_s_up_to_temperature:
+  sequence:
+  - action: counter.decrement
+    metadata: {}
+    data: {}
+    target:
+      entity_id: counter.coffee_machine_cycles
+    alias: Counter 'Decrement' on Coffee Machine cycles (in case machine did not reach
+      temperature)
+  - delay:
+      hours: 0
+      minutes: 12
+      seconds: 0
+      milliseconds: 0
+  - choose:
+    - conditions:
+      - condition: state
+        entity_id: input_select.coffee_machine_status
+        state:
+        - heating
+      sequence:
+      - action: input_select.select_option
+        metadata: {}
+        data:
+          option: up to temperature
+        target:
+          entity_id: input_select.coffee_machine_status
+      - alias: // notify snug/kitchen
+        parallel:
+        - action: notify.send_message
+          metadata: {}
+          data:
+            message: The coffee machine is up to temperature
+          target:
+            entity_id:
+            - notify.echo_kitchen_announce
+            - notify.echo_snug_announce
+      - action: counter.increment
+        metadata: {}
+        data: {}
+        target:
+          entity_id: counter.coffee_machine_cycles
+    - conditions:
+      - condition: state
+        entity_id: input_select.coffee_machine_status
+        state:
+        - cleaning required
+      sequence:
+      - action: counter.increment
+        metadata: {}
+        data: {}
+        target:
+          entity_id: counter.coffee_machine_cycles
+  mode: restart
+  alias: Coffee machine - announce it's up to temperature
+  description: ''
+unified_tts_announcement_ma_sonos_native:
+  alias: Generic Sonos Announcement
+  use_blueprint:
+    path: myblueprints/sonos_announcements.yaml
+    input:
+      target_players:
+        device_id: caf8334fdaf279dec5de717beac23f94
+      announcement_volume: 0.8
+  description: 'Uses the Sonos TTS Announcement blueprint with default settings: Kitchen
+    Sonos (MA entity), "garage notification'', AbbiNerual, 0.8 volume'
+lounge_floor_light_on:
+  sequence:
+  - action: light.turn_on
+    metadata: {}
+    target:
+      entity_id: light.floor_lamp
+    data:
+      transition: 3
+      brightness_pct: 70
+      effect: first try
+  alias: Lounge Floor Lights - ON
+  description: ''
+lounge_floor_lamp_off:
+  sequence:
+  - action: light.turn_off
+    metadata: {}
+    target:
+      entity_id: light.floor_lamp
+    data: {}
+  alias: Lounge Floor Lights - OFF
+  description: ''
+dining_corner_lamp_afternoon_tea:
+  alias: Dining Corner Lamp - Afternoon Tea
+  description: Sets 7 segments to static warm colours approximating the Afternoon
+    Tea scene
+  sequence:
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp
+    data:
+      brightness_pct: 90
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_001
+    data:
+      rgb_color:
+      - 232
+      - 67
+      - 147
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_002
+    data:
+      rgb_color:
+      - 240
+      - 124
+      - 174
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_003
+    data:
+      rgb_color:
+      - 248
+      - 181
+      - 200
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_004
+    data:
+      rgb_color:
+      - 246
+      - 185
+      - 171
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_005
+    data:
+      rgb_color:
+      - 244
+      - 188
+      - 142
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_006
+    data:
+      rgb_color:
+      - 247
+      - 213
+      - 177
+  - action: light.turn_on
+    target:
+      entity_id: light.dining_corner_lamp_segment_007
+    data:
+      rgb_color:
+      - 249
+      - 238
+      - 212

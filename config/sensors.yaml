@@ -1,0 +1,311 @@
+# sensors.yaml
+
+# Ian's Combined Presence Sensor (Trigger-based template binary sensor)
+- trigger: 
+    - platform: state
+      entity_id: sensor.pixel_9xl_wi_fi_connection
+      id: 'wifi_triggered'
+    - platform: state
+      entity_id: device_tracker.pixel_9xl_2
+      id: 'gps_triggered'
+  binary_sensor: 
+    - name: "Ian Combined Presence Sensor"
+      unique_id: ian_combined_presence_sensor
+      icon: mdi:home-account
+      device_class: presence
+      state: >
+        {% set wifi_is_known = is_state('sensor.pixel_9xl_wi_fi_connection', 'lancasi') %}
+        {% set gps_is_away = not is_state('device_tracker.pixel_9xl_2', 'home') %}
+        
+        {% if trigger.id == 'gps_triggered' %}
+          {% if gps_is_away %} off {% else %} on
+          {% endif %}
+        {% else %}
+        
+        {% if trigger.id == 'wifi_triggered' %}
+          {% if wifi_is_known %} on {% else %} {{this.state}}
+          {% endif %}
+        {% else %}
+        
+        {{this.state}}
+        
+        {% endif %}        
+        {% endif %}
+
+      attributes:
+        wifi_status: "{{ states('sensor.pixel_9xl_wi_fi_connection') }}"
+        gps_status: "{{ states('device_tracker.pixel_9xl_2') }}"
+
+# Liz's Combined Presence Sensor (Trigger-based template binary sensor)
+- trigger: 
+    - platform: state
+      entity_id: sensor.pixel_7a_wi_fi_connection
+      id: 'wifi_triggered'
+    - platform: state
+      entity_id: device_tracker.pixel_7a_2
+      id: 'gps_triggered'
+  binary_sensor: 
+    - name: "Liz Combined Presence Sensor"
+      unique_id: liz_combined_presence_sensor
+      icon: mdi:home-account
+      device_class: presence
+      state: >
+        {% set wifi_is_known = is_state('sensor.pixel_7a_wi_fi_connection', 'lancasi') %}
+        {% set gps_is_away = not is_state('device_tracker.pixel_7a_2', 'home') %}
+        
+        {% if trigger.id == 'gps_triggered' %}
+          {% if gps_is_away %} off {% else %} on
+          {% endif %}
+        {% else %}
+        
+        {% if trigger.id == 'wifi_triggered' %}
+          {% if wifi_is_known %} on {% else %} {{this.state}}
+          {% endif %}
+        {% else %}
+        
+        {{this.state}}
+        
+        {% endif %}        
+        {% endif %}
+
+      attributes:
+        wifi_status: "{{ states('sensor.pixel_7a_wi_fi_connection') }}"
+        gps_status: "{{ states('device_tracker.pixel_7a_2') }}"
+
+# Occupied Sensor (Standard template binary sensor)
+- binary_sensor:
+    - name: "Occupied"
+      unique_id: occupied_sensor
+      device_class: presence
+      state: "{{ is_state('person.ian_lancaster', 'home') or is_state('person.liz', 'home') }}"
+
+# Outside Temperature Sensor (Standard template sensor - note: not binary_sensor)
+- sensor: 
+    - name: "Outside Temperature"
+      unique_id: outside_temperature
+      unit_of_measurement: "°C"
+      state: "{{ state_attr('weather.forecast_home', 'temperature') }}"
+
+# Garage door combined sensor      
+- binary_sensor:
+  - name: "Master Garage Door"
+    unique_id: garage_door_master_composite  # This unlocks UI editing
+    device_class: garage_door
+    # This logic still picks the most recent state but waits to confirm it
+    state: >
+      {% set left = 'binary_sensor.garage_door_l_contact' %}
+      {% set right = 'binary_sensor.garage_door_r_contact' %}
+      
+      {% set l_state = states(left) %}
+      {% set r_state = states(right) %}
+      
+      {% set l_time = states[left].last_changed if states[left] else as_datetime(0) %}
+      {% set r_time = states[right].last_changed if states[right] else as_datetime(0) %}
+      
+      {% if l_state in ['on', 'off'] and r_state in ['on', 'off'] %}
+        {{ l_state if l_time > r_time else r_state }}
+      {% elif l_state in ['on', 'off'] %}
+        {{ l_state }}
+      {% else %}
+        {{ r_state }}
+      {% endif %}
+    # The Settling Delays
+    delay_on: "00:00:02"  # Wait 2 seconds of 'Open' state before reporting
+    delay_off: "00:00:02" # Wait 2 seconds of 'Closed' state before reporting
+    
+# Heating System Diagnostic (Trigger-based template sensor)
+- trigger:
+    # Trigger 1: HA startup
+    - platform: homeassistant
+      event: start
+    - platform: event
+      event_type: event_template_reloaded
+    # Trigger 2: The system is in a mismatch state for 10 minutes (The Debounce)
+    - platform: template
+      value_template: >
+        {% set boiler = states('binary_sensor.central_boiler') %}
+        {% set tado_temp = state_attr('climate.tado_smart_thermostat_ru2393140992', 'temperature') | float(0) %}
+        {{ (boiler == 'on' and tado_temp < 24) or (boiler == 'off' and tado_temp > 12) }}
+      for: "00:10:00"
+    # Trigger 3: The system becomes synchronized (Update instantly)
+    - platform: template
+      value_template: >
+        {% set boiler = states('binary_sensor.central_boiler') %}
+        {% set tado_temp = state_attr('climate.tado_smart_thermostat_ru2393140992', 'temperature') | float(0) %}
+        {{ (boiler == 'on' and tado_temp >= 24) or (boiler == 'off' and tado_temp <= 12) }}
+
+  sensor:
+    - name: "Heating System Diagnostic"
+      unique_id: heating_debounced_diag
+      icon: >
+        {% if "Conflict" in states('sensor.heating_system_diagnostic') %}
+          mdi:alert-octagon
+        {% else %}
+          mdi:check-circle
+        {% endif %}
+      state: >
+        {% set boiler = states('binary_sensor.central_boiler') %}
+        {% set tado_temp = state_attr('climate.tado_smart_thermostat_ru2393140992', 'temperature') | float(0) %}
+        
+        {% if (boiler == 'on' and tado_temp >= 24) or (boiler == 'off' and tado_temp <= 12) %}
+          Synchronized
+        {% else %}
+          Conflict: {{ 'Boiler ON' if boiler == 'on' else 'Boiler OFF' }} but Tado at {{ tado_temp }}°C
+        {% endif %}
+
+- binary_sensor:
+    - name: "Heating System Rogue Radiator Alert"
+      unique_id: heating_rogue_alert_binary
+      device_class: problem
+      state: >
+        {% set vts = states.climate | selectattr('attributes.vtherm_over_climate', 'defined') | list %}
+        {% set ns = namespace(found=false) %}
+        {% for vt in vts %}
+          {# ONLY check if the thermostat is not 'off' #}
+          {% if vt.state != 'off' %}
+            {% set regulated = vt.attributes.regulated_target_temperature | float(0) %}
+            {% set preset = vt.attributes.preset_mode %}
+            {% for underlying in vt.attributes.vtherm_over_climate.underlying_entities %}
+              {% set actual = state_attr(underlying, 'temperature') | float(0) %}
+              {% set diff = (actual - regulated) | abs %}
+              {% if diff > 0.4 or preset == 'none' %}
+                {% set ns.found = true %}
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.found }}
+      
+      delay_on: "00:02:00"
+      delay_off: "00:00:15"
+      
+      attributes:
+        rogue_entities: >
+          {% set vts = states.climate | selectattr('attributes.vtherm_over_climate', 'defined') | list %}
+          {% set ns = namespace(entities=[]) %}
+          {% for vt in vts %}
+            {# ONLY check if the thermostat is not 'off' #}
+            {% if vt.state != 'off' %}
+              {% set regulated = vt.attributes.regulated_target_temperature | float(0) %}
+              {% set preset = vt.attributes.preset_mode %}
+              {% for underlying in vt.attributes.vtherm_over_climate.underlying_entities %}
+                {% set actual = state_attr(underlying, 'temperature') | float(0) %}
+                {% set diff = (actual - regulated) | abs %}
+                {% if diff > 0.4 or preset == 'none' %}
+                  {% set ns.entities = ns.entities + [vt.entity_id] %}
+                {% endif %}
+              {% endfor %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.entities | unique | list }}
+
+- binary_sensor:
+      - name: "Heating System Stuck Valves"
+        unique_id: heating_stuck_valves_alert_binary
+        device_class: problem
+
+        delay_on: "00:02:00"
+
+        state: >-
+          {% set ns = namespace(stuck=false) %}
+          {% set vts = states.climate
+            | selectattr('attributes.vtherm_over_climate', 'defined')
+            | rejectattr('entity_id', 'eq', 'climate.snug_heater_versatile_thermostat')
+            | list %}
+          {% for vt in vts %}
+            {% set trv = vt.attributes.vtherm_over_climate.underlying_entities[0] %}
+            {% set vt_action = vt.attributes.hvac_action %}
+            {% set trv_action = state_attr(trv, 'hvac_action') %}
+            {% if trv_action not in ['heating', 'idle', 'off'] %}{% continue %}{% endif %}
+            {% if (vt_action == 'heating' and trv_action == 'idle') or
+                  (vt_action == 'idle' and trv_action == 'heating') %}
+              {% set ns.stuck = true %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.stuck }}
+        attributes:
+          stuck_entities: >-
+            {% set ns = namespace(found=[]) %}
+            {% set vts = states.climate
+              | selectattr('attributes.vtherm_over_climate', 'defined')
+              | rejectattr('entity_id', 'eq', 'climate.snug_heater_versatile_thermostat')
+              | list %}
+            {% for vt in vts %}
+              {% set trv = vt.attributes.vtherm_over_climate.underlying_entities[0] %}
+              {% set vt_action = vt.attributes.hvac_action %}
+              {% set trv_action = state_attr(trv, 'hvac_action') %}
+              {% if trv_action not in ['heating', 'idle', 'off'] %}{% continue %}{% endif %}
+              {% if (vt_action == 'heating' and trv_action == 'idle') or
+                    (vt_action == 'idle' and trv_action == 'heating') %}
+                {% set ns.found = ns.found + [trv] %}
+              {% endif %}
+            {% endfor %}
+            {{ ns.found | unique | list }}
+
+- binary_sensor:
+    - name: "Heating System Software Desync"
+      unique_id: heating_software_desync_alert
+      device_class: problem
+      
+      delay_on: "00:10:00" # Let the smoothing logic try to fix itself first
+      
+      state: >-
+        {% set ns = namespace(stuck=false) %}
+        {% set threshold = 0.9 %}
+        {% set vts = states.climate | selectattr('attributes.vtherm_over_climate', 'defined') | list %}
+        
+        {% for vt in vts %}
+          {% set mode = vt.state %}
+          {% set target = state_attr(vt.entity_id, 'temperature') | float(0) %}
+          {% set current = state_attr(vt.entity_id, 'current_temperature') | float(0) %}
+          {% set action = state_attr(vt.entity_id, 'hvac_action') %}
+          
+          {% if mode in ['heat', 'auto'] %}
+            {# Case A: Over-heating (VT stuck heating) #}
+            {% if action == 'heating' and current > (target + threshold) %}
+              {% set ns.stuck = true %}
+            {% endif %}
+            
+            {# Case B: Under-heating (VT stuck idle) #}
+            {% if action == 'idle' and current < (target - threshold) %}
+              {% set ns.stuck = true %}
+            {% endif %}
+          {% endif %}
+        {% endfor %}
+        {{ ns.stuck }}
+        
+      attributes:
+        stuck_vts: >-
+          {% set ns = namespace(found=[]) %}
+          {% set threshold = 0.9 %}
+          {% set vts = states.climate | selectattr('attributes.vtherm_over_climate', 'defined') | list %}
+          {% for vt in vts %}
+            {% if vt.state in ['heat', 'auto'] %}
+              {% set target = state_attr(vt.entity_id, 'temperature') | float(0) %}
+              {% set current = state_attr(vt.entity_id, 'current_temperature') | float(0) %}
+              {% set action = state_attr(vt.entity_id, 'hvac_action') %}
+              
+              {% if (action == 'heating' and current > (target + threshold)) or
+                    (action == 'idle' and current < (target - threshold)) %}
+                {% set ns.found = ns.found + [vt.name] %}
+              {% endif %}
+            {% endif %}
+          {% endfor %}
+          {{ ns.found | unique | list }}
+
+# Heating System Orphan Boiler (Trigger-based template binary sensor)
+# Fires when VT's central boiler is on but no VT is actively calling for heat.
+# Suppressed by the stuck valve automation - see Orphan Boiler Reset automation.
+- binary_sensor:
+    - name: "Heating System Orphan Boiler"
+      unique_id: heating_orphan_boiler_alert
+      device_class: problem
+      state: >
+        {% set boiler_on = is_state('binary_sensor.central_boiler', 'on') %}
+        {% set any_vt_heating = states.climate
+           | selectattr('attributes.vtherm_over_climate', 'defined')
+           | selectattr('attributes.hvac_action', 'eq', 'heating')
+           | list | count > 0 %}
+        {{ boiler_on and not any_vt_heating }}
+      delay_on: "00:05:00"
+      delay_off: "00:00:30"

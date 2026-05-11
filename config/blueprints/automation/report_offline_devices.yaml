@@ -1,0 +1,206 @@
+blueprint:
+  name: Offline Devices Report by LTek
+  description: >
+    
+    Outputs list of Offline Devices
+    
+    - Format options: Friendly Name, Entity ID, Friendly Name (Entity ID)
+    
+    - Notification options for Persistent UI and Mobile
+    
+    - Exclude entities : specific and/or by string (text)
+    
+    - Option to disable both Persistent and Mobile notifications when no offline devices detected
+    
+    - Additional Actions will have access to:
+      {{ offline_devices }} → formatted offline device list
+      {{ offline_devices_count }} → number: count of offline devices
+    
+    Author: LTek
+    
+    Version: 2025.06.29.18
+    
+    
+    special thanks to Petro for the help!
+    
+    
+  source_url: https://gist.github.com/Ltek/0c9cecf632b9c32915130680d834bcf7
+  domain: automation
+  input:
+    time:
+      name: Time of Day
+      description: Run at this time of the day
+      default: '6:00:00'
+      selector:
+        time: {}
+    day:
+      name: Week Day to Run Report
+      description: '0 = Daily ... 1 = Monday to 7 = Sunday'
+      default: 0
+      selector:
+        number:
+          min: 0
+          max: 7
+          mode: slider
+          step: 1
+    exclude_entities:
+      name: Exclude Individual Entities (optional)
+      description: Select specific entities to exclude from the list (one per line, e.g. "switch.phone_battery")
+      default: []
+      selector:
+        entity:
+          multiple: true
+          domain:
+            - sensor
+            - binary_sensor
+            - switch
+    exclude_strings:
+      name: Exclude entities with this Text  (optional)
+      description: Excludes the Entity from the list if text appears anywhere in the Entity ID (one per line, e.g. "battery" will exclude ALL entities with that text anywhere)
+      default: ""
+      selector:
+        text:
+          multiline: true
+    format_option:
+      name: Display Format
+      description: Choose how to display entities in the report
+      default: friendly_name
+      selector:
+        select:
+          options:
+            - label: "Friendly Names"
+              value: friendly_name
+            - label: "Entity IDs"
+              value: entity_id
+            - label: "Friendly Names (Entity IDs)"
+              value: combined
+    enable_mobile_notifications:
+      name: Enable Mobile Notifications
+      description: Send notifications to your mobile device
+      default: true
+      selector:
+        boolean: {}
+    mobile_notification_services:
+      name: Mobile Notification Services
+      description: Services to use for mobile notifications (e.g., notify.mobile_app_mydevice), one per line
+      default: notify.mobile_app_EditMe
+      selector:
+        text:
+          multiline: true
+    enable_persistent_notifications:
+      name: Enable Persistent Notifications in the UI
+      description: Show persistent notifications in Home Assistant UI
+      default: true
+      selector:
+        boolean: {}
+    notify_when_no_offline_devices:
+      name: Notify When No Offline Devices
+      description: Send notifications even when no offline devices are detected
+      default: false
+      selector:
+        boolean: {}
+    actions:
+      name: Additional Actions
+      description: Additional actions to run when offline devices are detected
+      default: []
+      selector:
+        action: {}
+
+variables:
+  day: !input day
+  exclude_entities: !input exclude_entities
+  exclude_strings: !input exclude_strings
+  format_option: !input format_option
+  enable_mobile_notifications: !input enable_mobile_notifications
+  mobile_notification_services: !input mobile_notification_services
+  enable_persistent_notifications: !input enable_persistent_notifications
+  notify_when_no_offline_devices: !input notify_when_no_offline_devices
+  _offline_devices: >
+    {% set exclude_entities = exclude_entities if exclude_entities is iterable else [exclude_entities] %}
+    {% set exclude_regex = exclude_strings.split('\n') | map('trim') | reject('eq', '') | list | join('|') if exclude_strings is defined and exclude_strings else 'abcdefghijklmnopqrstuvwxyz' %}
+    {% set entities = states | map(attribute='entity_id') | reject('search', 'cloud') | reject('in', exclude_entities) | reject('search', exclude_regex) | list %}
+    {% set sensors = entities | select('search', '^(sensor|binary_sensor)') | list %}
+    {% set battery_entities = sensors | select('is_state_attr', 'device_class', 'battery') | reject('has_value') | list %}
+    {% set switches = entities | select('search', '^switch') | reject('has_value') | list %}
+    {% set offline_entities = (battery_entities + switches) | unique %}
+    {% if format_option == 'friendly_name' %}
+      {{ offline_entities | map('state_attr', 'friendly_name') | list }}
+    {% elif format_option == 'entity_id' %}
+      {{ offline_entities | list }}
+    {% elif format_option == 'combined' %}
+      [
+      {%- for e in offline_entities %}
+        '{{ state_attr(e, "friendly_name") }} ({{ e }})'{% if not loop.last %},{% endif %}
+      {%- endfor %}
+      ]
+    {% else %}
+      ['Wrong Input']
+    {% endif %}
+
+  
+  offline_devices: >
+    {% if _offline_devices | length > 0 %}
+    {{ _offline_devices | map('string') | list | sort | join('\n- ') }}
+    {% else %}
+    No offline devices detected.
+    {% endif %}
+
+  offline_devices_count: >
+    {{ _offline_devices | length }}
+
+trigger:
+  - platform: time
+    at: !input time
+
+condition:
+  - condition: template
+    value_template: "{{ (day == 0 or day == now().isoweekday()) and (offline_devices != 'No offline devices detected.' or notify_when_no_offline_devices) }}"
+
+action:
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ enable_persistent_notifications and (offline_devices != 'No offline devices detected.' or notify_when_no_offline_devices) }}"
+        sequence:
+          - service: persistent_notification.create
+            data:
+              title: "Offline Devices Report"
+              message: >
+                {{ offline_devices_count }} Total:
+                
+                
+                -
+                {{ offline_devices }}
+    default: []
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ enable_mobile_notifications and (offline_devices != 'No offline devices detected.' or notify_when_no_offline_devices) }}"
+        sequence:
+          - repeat:
+              for_each: >
+                {% set services = mobile_notification_services.split('\n') | map('trim') | reject('eq', '') | list %}
+                {{ services }}
+              sequence:
+                - service: "{{ repeat.item }}"
+                  data:
+                    title: "Offline Devices Report"
+                    message: >
+                      {{ offline_devices_count }} Total:
+                      
+                      
+                      -
+                      {{ offline_devices }}
+                    data:
+                      tag: offline_devices_report
+    default: []
+  - choose:
+      - conditions:
+          - condition: template
+            value_template: "{{ offline_devices != 'No offline devices detected.' }}"
+        sequence:
+          - alias: "Run additional actions"
+            sequence: !input actions
+    default: []
+
+mode: single

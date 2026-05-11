@@ -1,0 +1,107 @@
+blueprint:
+  name: "Sonos TTS Announcement"
+  description: >
+    Works with both Music Assistant and Native Sonos entities.
+    Supports dynamic overrides for message, volume, voice, language, and target players.
+  domain: script
+  input:
+    target_players:
+      name: Default Media players
+      selector:
+        target:
+          entity:
+            domain: media_player
+    announcement_text:
+      name: Default Announcement text
+      default: "Garage door notification"
+      selector:
+        text:
+          multiline: true
+    language:
+      name: Default Language
+      default: en-GB
+      selector:
+        text: {}
+    voice:
+      name: Default Voice
+      default: AbbiNeural
+      selector:
+        select:
+          options:
+            - AbbiNeural
+            - AlfieNeural
+            - BellaNeural
+            - EllieNeural
+            - EthanNeural
+            - HollyNeural
+            - NoahNeural
+            - OliverNeural
+            - PhoebeNeural
+            - ThomasNeural
+            - LibbyNeural
+            - MiaNeural
+            - RyanNeural
+            - SoniaNeural
+    announcement_volume:
+      name: Default Announcement Volume
+      default: 0.6
+      selector:
+        number:
+          min: 0.1
+          max: 1.0
+          step: 0.05
+          mode: slider
+
+fields:
+  message:
+    name: Message
+    description: "The overriding message to speak."
+  target_players:
+    name: Target Players
+    description: "Override the default speakers."
+    selector:
+      target:
+        entity:
+          domain: media_player
+  announcement_volume:
+    name: Volume Override
+    description: "Override the default volume (0.1 - 1.0)."
+  voice:
+    name: Voice Override
+    description: "Override the default voice."
+  language:
+    name: Language Override
+    description: "Override the default language."
+
+variables:
+  # 1. Handle Target Precedence
+  input_target: !input target_players
+  final_target: "{{ target_players if target_players is defined else input_target }}"
+
+  # 2. Handle Volume Precedence
+  input_volume: !input announcement_volume
+  final_volume_float: "{{ announcement_volume if announcement_volume is defined else input_volume }}"
+
+  # 3. Handle Voice & Language Precedence
+  input_voice: !input voice
+  final_voice: "{{ voice if voice is defined else input_voice }}"
+  
+  input_lang: !input language
+  final_lang: "{{ language if language is defined else input_lang }}"
+
+  # 4. Handle Message Precedence
+  input_text: !input announcement_text
+  final_message: "{{ message if (message is defined and message != '') else input_text }}"
+
+sequence:
+  - action: media_player.play_media
+    target: "{{ final_target }}"
+    data:
+      announce: true
+      media_content_id: >-
+        media-source://tts/tts.home_assistant_cloud?message={{ final_message | urlencode }}&language={{ final_lang }}&voice={{ final_voice }}
+      media_content_type: music
+      extra:
+        volume: "{{ (final_volume_float | float * 100) | round(0) | int }}"
+
+mode: parallel
