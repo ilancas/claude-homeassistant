@@ -1,7 +1,21 @@
 # Home Assistant Configuration Management - .gitignore
 
-# Personal HA configuration (not tracked in public repo — use make pull/push)
-config/
+# Sensitive config files
+config/secrets.yaml
+config/esphome/secrets.yaml
+config/.storage/
+config/zigbee2mqtt/secret.yaml
+
+# Runtime/database files
+config/.ha_run.lock
+config/zigbee.db
+config/known_devices.yaml
+config/govee_learning.yaml
+config/zigbee2mqtt/database.db
+config/zigbee2mqtt/database.db.backup
+config/zigbee2mqtt/state.json
+config/zigbee2mqtt/coordinator_backup.json
+config/everything-presence-zone-configurator/devices/
 
 # Screenshots
 screenshot/
