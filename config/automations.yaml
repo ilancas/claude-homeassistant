@@ -2209,7 +2209,6 @@
       motion_bypass_lights_on: []
       motion_bypass_lights_stop:
       - input_boolean.bedroom_light_bypass
-      - input_boolean.night_lights_mode
       include_time: time_enabled
       after_time: 07:30:15
       before_time: '22:30:00'
@@ -2220,8 +2219,7 @@
       include_state_control: state_control_enabled
       bypass_time_delay: 0
       motion_bypass_lights_off: []
-      include_bypass_auto_off:
-      - bypass_auto_off_enabled_stop
+      include_bypass_auto_off: []
       bypass_auto_off_delay: 120
       end_scenes:
       - scene.bedside_light_turn_off
