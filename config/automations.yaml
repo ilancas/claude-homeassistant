@@ -39,7 +39,7 @@
   description: ''
   triggers:
   - trigger: time
-    at: '16:00:00'
+    at: '16:45:00'
   conditions:
   - condition: or
     conditions:
@@ -3160,14 +3160,18 @@
     metadata: {}
     target:
       area_id:
-      - snug
       - dining_room
       - kitchen
       - lounge
-      device_id: 3caa8013260600d0a0ae856adc333328
       entity_id:
       - switch.bedroom_fan_plug
     data: {}
+  - action: switch.turn_on
+    metadata: {}
+    target:
+      entity_id: switch.tapo_pm14_dishwasher
+    data: {}
+    alias: Keep dishwasher plug on
   mode: single
 - id: '1767803513889'
   alias: When holiday mode turns off

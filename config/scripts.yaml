@@ -130,6 +130,11 @@ bedtime:
       minutes: 5
       seconds: 0
       milliseconds: 0
+  - action: switch.turn_off
+    metadata: {}
+    target:
+      entity_id: switch.tapo_pm1_lounge_tv
+    data: {}
   - condition: state
     entity_id: light.bedside_light
     state: 'on'
@@ -301,11 +306,6 @@ goodnight:
         target_players:
           entity_id:
           - media_player.sonos_bedroom
-    - action: switch.turn_off
-      metadata: {}
-      target:
-        entity_id: switch.tapo_pm1_lounge_tv
-      data: {}
   - action: script.unified_tts_announcement_ma_sonos_native
     metadata: {}
     data:
