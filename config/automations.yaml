@@ -888,7 +888,7 @@
     - 'off'
     id: t2
     trigger: state
-  - entity_id: media_player.kitchen
+  - entity_id: media_player.sonos_kitchen
     to: playing
     id: t3
     trigger: state
@@ -902,15 +902,15 @@
   - condition: and
     conditions:
     - condition: state
-      entity_id: media_player.kitchen
+      entity_id: media_player.sonos_kitchen
       state: playing
     - condition: or
       conditions:
       - condition: state
-        entity_id: media_player.lounge
+        entity_id: media_player.sonos_lounge
         state: paused
       - condition: state
-        entity_id: media_player.lounge
+        entity_id: media_player.sonos_lounge
         state: idle
       - condition: template
         value_template: '{{ sonos_target in state_attr(sonos_source, "group_members")
@@ -933,9 +933,9 @@
       - alias: Add the speaker to the group
         data:
           group_members:
-          - media_player.lounge
+          - media_player.sonos_lounge
         target:
-          entity_id: media_player.kitchen
+          entity_id: media_player.sonos_kitchen
         action: media_player.join
     - alias: Motion has no longer been detected - unjoin after delay
       conditions:
@@ -964,7 +964,7 @@
           seconds: 0
       - alias: Unjoin the speaker from the group
         target:
-          entity_id: media_player.lounge
+          entity_id: media_player.sonos_lounge
         action: media_player.unjoin
         data: {}
   mode: restart
@@ -973,8 +973,8 @@
     motion_trigger:
     - binary_sensor.hall_presence_sensor_occupancy
     - binary_sensor.study_presence_sensor_occupancy
-    sonos_source: media_player.kitchen
-    sonos_target: media_player.lounge
+    sonos_source: media_player.sonos_kitchen
+    sonos_target: media_player.sonos_lounge
     allow_tv: false
     time_delay: 10
 - id: '1753014110763'
