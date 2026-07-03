@@ -3900,3 +3900,45 @@
           priority: high
           clickAction: /lovelace-thermostat
   mode: single
+- id: backup_health_alert
+  alias: Alert if automatic backups stop completing
+  description: >-
+    Raises a persistent notification (and a phone push) if no automatic backup
+    has completed successfully to ALL destinations (local, Synology, HA Cloud) in
+    over 26 hours. sensor.backup_last_successful_automatic_backup only advances
+    when every configured backup agent succeeds, so this catches a silently
+    failing destination such as the HA Cloud upload leg. Auto-clears when a backup
+    succeeds again.
+  triggers:
+  - trigger: time
+    at: '14:00:00'
+  - trigger: state
+    entity_id: sensor.backup_last_successful_automatic_backup
+  conditions: []
+  actions:
+  - choose:
+    - conditions:
+      - condition: template
+        value_template: >-
+          {% set s = states('sensor.backup_last_successful_automatic_backup') %}
+          {{ s in ['unknown', 'unavailable', 'none', ''] or (as_timestamp(now())
+          - as_timestamp(s)) > 26 * 3600 }}
+      sequence:
+      - action: persistent_notification.create
+        data:
+          notification_id: backup_health_alert
+          title: ⚠️ Home Assistant backups are failing
+          message: >-
+            {% set s = states('sensor.backup_last_successful_automatic_backup') %}
+            {% if s in ['unknown', 'unavailable', 'none', ''] %}No successful
+            automatic backup is on record.{% else %}No automatic backup has
+            completed to all destinations since {{ as_timestamp(s) |
+            timestamp_custom('%a %d %b %H:%M') }} ({{ ((as_timestamp(now()) -
+            as_timestamp(s)) / 3600) | round(0) }} h ago).{% endif %} A
+            destination (local, Synology or HA Cloud) is likely failing — check
+            Settings → System → Backups.
+    default:
+    - action: persistent_notification.dismiss
+      data:
+        notification_id: backup_health_alert
+  mode: single
