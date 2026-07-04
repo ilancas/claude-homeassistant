@@ -871,7 +871,7 @@
   description: ''
   triggers:
   - entity_id:
-    - binary_sensor.study_presence_sensor_occupancy
+    - binary_sensor.study_combined_sensor
     - binary_sensor.everything_presence_lite_c23424_occupancy
     from:
     - 'off'
@@ -880,7 +880,7 @@
     id: t1
     trigger: state
   - entity_id:
-    - binary_sensor.study_presence_sensor_occupancy
+    - binary_sensor.study_combined_sensor
     - binary_sensor.everything_presence_lite_c23424_occupancy
     from:
     - 'on'
@@ -951,7 +951,7 @@
         - 'off'
         entity_id: binary_sensor.everything_presence_lite_c23424_occupancy
       - condition: state
-        entity_id: binary_sensor.study_presence_sensor_occupancy
+        entity_id: binary_sensor.study_combined_sensor
         state: 'off'
       sequence:
       - alias: Wait the number of minutes set in the time delay
@@ -983,7 +983,7 @@
           entity_id: binary_sensor.everything_presence_lite_c23424_occupancy
           state: 'on'
         - condition: state
-          entity_id: binary_sensor.study_presence_sensor_occupancy
+          entity_id: binary_sensor.study_combined_sensor
           state: 'on'
       sequence:
       - alias: Add the speaker to the group
@@ -998,7 +998,7 @@
   variables:
     motion_trigger:
     - binary_sensor.hall_presence_sensor_occupancy
-    - binary_sensor.study_presence_sensor_occupancy
+    - binary_sensor.study_combined_sensor
     sonos_source: media_player.sonos_kitchen
     sonos_target: media_player.sonos_lounge
     allow_tv: false
