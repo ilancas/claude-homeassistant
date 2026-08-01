@@ -3843,13 +3843,12 @@
       not in ['unknown', 'unavailable']\n   and trigger.from_state.attributes.installed_version
       != trigger.to_state.attributes.installed_version }}\n"
   action:
+  - delay: 00:01:00
   - variables:
       base_id: '{{ trigger.entity_id | replace(''update.'', '''') }}'
       trv_name: '{{ trigger.entity_id | replace(''update.'', '''') | replace(''_'',
         '' '') | title }}'
       new_version: '{{ state_attr(trigger.entity_id, ''installed_version'') }}'
-      smart_pid_enabled: '{{ states(''number.'' + trigger.entity_id | replace(''update.'',
-        '''') + ''_temperature_accuracy'') == ''unavailable'' }}'
       sensor_reverted: '{{ states(''select.'' + trigger.entity_id | replace(''update.'',
         '''') + ''_temperature_sensor_select'') == ''internal'' }}'
   - action: persistent_notification.create
@@ -3858,12 +3857,11 @@
       message: '**{{ trv_name }}** has been updated to firmware version **{{ new_version
         }}**.
 
-        {% if smart_pid_enabled %} ⚠️ **Smart Temperature Control is re-enabled**
-        — disable it in Zigbee2MQTT to restore Versatile Thermostat control. {% endif
-        %} {% if sensor_reverted %} ⚠️ **Temperature sensor has reverted to Internal**
-        — set it back to External in Zigbee2MQTT. {% endif %} {% if not smart_pid_enabled
-        and not sensor_reverted %} ✅ Settings appear correct — no action needed. {%
-        endif %}
+        {% if sensor_reverted %} ⚠️ **Temperature sensor has reverted to Internal**
+        — set it back to External in Zigbee2MQTT. {% else %} ✅ Temperature sensor
+        setting is correct. {% endif %} Smart Temperature Control is handled separately
+        by the "TRV: Auto-disable Smart Temperature Control" automation, which notifies
+        if it had to correct it.
 
         '
       notification_id: trv_firmware_{{ trigger.entity_id | replace('update.', '')
@@ -3871,6 +3869,43 @@
   mode: parallel
   max: 7
   id: 138b1e8046e5472fb4fd4336fa1cffad
+- id: '1769000000010'
+  alias: 'TRV: Auto-disable Smart Temperature Control'
+  description: 'Sonoff TRVs re-enable Smart Temperature Control after a firmware update
+    or a Zigbee2MQTT update/restart, which overrides Versatile Thermostat regulation.
+    Switches it back off and notifies.
+
+    '
+  triggers:
+  - trigger: state
+    entity_id:
+    - switch.dining_radiator_smart_temperature_control
+    - switch.kitchen_radiator_smart_temperature_control
+    - switch.snug_radiator_smart_temperature_control
+    - switch.study_radiator_smart_temperature_control
+    - switch.lounge_radiator_small_smart_temperature_control
+    - switch.lounge_radiator_large_smart_temperature_control
+    to: 'on'
+    for: 00:00:30
+  actions:
+  - variables:
+      trv_name: '{{ trigger.entity_id | replace(''switch.'', '''') | replace(''_smart_temperature_control'',
+        '''') | replace(''_'', '' '') | title }}'
+  - action: switch.turn_off
+    target:
+      entity_id: '{{ trigger.entity_id }}'
+  - action: persistent_notification.create
+    data:
+      title: 'TRV Setting Corrected: {{ trv_name }}'
+      message: '**{{ trv_name }}** had Smart Temperature Control re-enabled — usually
+        after a TRV firmware update or a Zigbee2MQTT update/restart. It has been switched
+        back off automatically to restore Versatile Thermostat control.
+
+        '
+      notification_id: trv_smart_pid_{{ trigger.entity_id | replace('switch.', '')
+        }}
+  mode: parallel
+  max: 6
 - id: '1769000000001'
   alias: 'Heating Conflict: Orphan Boiler Reset'
   description: 'Resets Tado to 12°C when the central boiler is on but no VT is calling
