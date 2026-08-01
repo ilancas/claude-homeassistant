@@ -3843,25 +3843,20 @@
       not in ['unknown', 'unavailable']\n   and trigger.from_state.attributes.installed_version
       != trigger.to_state.attributes.installed_version }}\n"
   action:
-  - delay: 00:01:00
   - variables:
-      base_id: '{{ trigger.entity_id | replace(''update.'', '''') }}'
       trv_name: '{{ trigger.entity_id | replace(''update.'', '''') | replace(''_'',
         '' '') | title }}'
       new_version: '{{ state_attr(trigger.entity_id, ''installed_version'') }}'
-      sensor_reverted: '{{ states(''select.'' + trigger.entity_id | replace(''update.'',
-        '''') + ''_temperature_sensor_select'') == ''internal'' }}'
   - action: persistent_notification.create
     data:
       title: 'TRV Firmware Updated: {{ trv_name }}'
       message: '**{{ trv_name }}** has been updated to firmware version **{{ new_version
         }}**.
 
-        {% if sensor_reverted %} ⚠️ **Temperature sensor has reverted to Internal**
-        — set it back to External in Zigbee2MQTT. {% else %} ✅ Temperature sensor
-        setting is correct. {% endif %} Smart Temperature Control is handled separately
-        by the "TRV: Auto-disable Smart Temperature Control" automation, which notifies
-        if it had to correct it.
+        Settings reset by the update are corrected automatically: Smart Temperature
+        Control by "TRV: Auto-disable Smart Temperature Control", and the temperature
+        sensor source by "Heating Conflict: Radiator temperature source set to ''internal''".
+        Each notifies separately if it had to act.
 
         '
       notification_id: trv_firmware_{{ trigger.entity_id | replace('update.', '')
