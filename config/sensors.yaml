@@ -72,6 +72,15 @@
         wifi_status: "{{ states('sensor.pixel_7a_wi_fi_connection') }}"
         gps_status: "{{ states('device_tracker.pixel_7a_2') }}"
 
+# Ian & Liz Template Device Trackers (replaces deprecated device_tracker.see automations)
+- device_tracker:
+    - name: "ian_tracker"
+      unique_id: ian_tracker
+      in_zones: "{{ ['zone.home'] if is_state('binary_sensor.ian_combined_presence_sensor', 'on') else [] }}"
+    - name: "liz_tracker"
+      unique_id: liz_tracker
+      in_zones: "{{ ['zone.home'] if is_state('binary_sensor.liz_combined_presence_sensor', 'on') else [] }}"
+
 # Occupied Sensor (Standard template binary sensor)
 - binary_sensor:
     - name: "Occupied"

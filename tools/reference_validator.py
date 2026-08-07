@@ -396,7 +396,7 @@ class ReferenceValidator:
             return entities
 
         # Template sensors, binary_sensors, etc.
-        for entity_type in ["sensor", "binary_sensor", "number", "select", "button"]:
+        for entity_type in ["sensor", "binary_sensor", "number", "select", "button", "device_tracker"]:
             if entity_type in template_config:
                 type_data = template_config[entity_type]
                 if isinstance(type_data, list):

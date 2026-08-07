@@ -492,42 +492,6 @@
       external_temperature_sensor: sensor.dining_temperature_sensor_temperature
       trv_external_temperature_input:
       - number.dining_radiator_external_temperature_input
-- id: '1746280329940'
-  alias: Ian is at home combined device tracker
-  description: ''
-  triggers:
-  - entity_id:
-    - binary_sensor.ian_combined_presence_sensor
-    trigger: state
-  - trigger: homeassistant
-    event: start
-  conditions: []
-  actions:
-  - data:
-      dev_id: ian_tracker
-      location_name: "{% if is_state('binary_sensor.ian_combined_presence_sensor',
-        'on') %}\n  home\n{% else %}\n  not_home\n{% endif %}\n"
-      source_type: router
-    action: device_tracker.see
-  mode: single
-- id: '1746298714045'
-  alias: Liz is at home combined device tracker
-  description: ''
-  triggers:
-  - entity_id:
-    - binary_sensor.liz_combined_presence_sensor
-    trigger: state
-  - trigger: homeassistant
-    event: start
-  conditions: []
-  actions:
-  - data:
-      dev_id: liz_tracker
-      location_name: "{% if is_state('binary_sensor.liz_combined_presence_sensor',
-        'on') %}\n  home\n{% else %}\n  not_home\n{% endif %}\n"
-      source_type: router
-    action: device_tracker.see
-  mode: single
 - id: '1746873006027'
   alias: Dehumidifier ON if humidity > 57% for 30m in winter
   description: ''
@@ -827,6 +791,7 @@
       exclude_sensors:
         entity_id:
         - sensor.sonos_roam_battery
+        - sensor.meter_pro_co2_c0d6_battery
       custom_group_battery_level: 35
 - id: '1749581961662'
   alias: Hall light on at sunset; night lights after 'Goodnight' till 'Wakeup time'
