@@ -3,7 +3,7 @@
 # Ian's Combined Presence Sensor (Trigger-based template binary sensor)
 - trigger: 
     - platform: state
-      entity_id: sensor.pixel_9xl_wi_fi_connection
+      entity_id: sensor.pixel_9_pro_xl_wi_fi_connection
       id: 'wifi_triggered'
     - platform: state
       entity_id: device_tracker.pixel_9xl_2
@@ -14,7 +14,7 @@
       icon: mdi:home-account
       device_class: presence
       state: >
-        {% set wifi_is_known = is_state('sensor.pixel_9xl_wi_fi_connection', 'lancasi') %}
+        {% set wifi_is_known = is_state('sensor.pixel_9_pro_xl_wi_fi_connection', 'lancasi') %}
         {% set gps_is_away = not is_state('device_tracker.pixel_9xl_2', 'home') %}
         
         {% if trigger.id == 'gps_triggered' %}
@@ -33,7 +33,7 @@
         {% endif %}
 
       attributes:
-        wifi_status: "{{ states('sensor.pixel_9xl_wi_fi_connection') }}"
+        wifi_status: "{{ states('sensor.pixel_9_pro_xl_wi_fi_connection') }}"
         gps_status: "{{ states('device_tracker.pixel_9xl_2') }}"
 
 # Liz's Combined Presence Sensor (Trigger-based template binary sensor)
