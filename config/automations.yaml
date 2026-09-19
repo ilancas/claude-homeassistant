@@ -1088,7 +1088,7 @@
       end_appliance_power: 1
       end_notify_device:
       - ff859ed65b119ce2a3e073a4cfa3f3cb
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       end_message: The washing machine has finished!
       include_end_notify: enable_end_notify_options
       include_time: time_enabled
@@ -1135,7 +1135,7 @@
       include_time_service_reminder: disable_time_service_reminder
       service_reminder_cycles: 50
       start_notify_device:
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       running_dead_zone: 3
       include_start_notify: disable_start_notify_options
       cycle_counter_helper: counter.washing_machine_cycles
@@ -1544,7 +1544,7 @@
       include_start_notify: enable_start_notify_options
       start_notify_device:
       - ff859ed65b119ce2a3e073a4cfa3f3cb
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       start_title: Freezer alert!
       start_notify_tag: freezer
       start_notify_data:
@@ -1685,7 +1685,7 @@
         seconds: 0
       include_start_notify: enable_start_notify_options
       start_notify_device:
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       - ff859ed65b119ce2a3e073a4cfa3f3cb
       start_title: 'Garage door alert:'
       start_message: door is still open!
@@ -1788,7 +1788,7 @@
       - binary_sensor.master_garage_door
       include_start_notify: enable_start_notify_options
       start_notify_device:
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       - ff859ed65b119ce2a3e073a4cfa3f3cb
       start_message: Garage door is now open
       start_notify_data:
@@ -1808,7 +1808,7 @@
       - binary_sensor.master_garage_door
       include_end_notify: enable_end_notify_options
       end_notify_device:
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       - ff859ed65b119ce2a3e073a4cfa3f3cb
       end_title: 'Alert! '
       end_message: The garage door is now closed
@@ -3573,7 +3573,7 @@
     input:
       power_sensor: sensor.tapo_pm14_dishwasher_current_consumption
       end_notify_device:
-      - 1dc9b847cc323922605b2ed8175088b8
+      - efacb21b6e4e9cc60e3fcd3e3ace99ca
       - ff859ed65b119ce2a3e073a4cfa3f3cb
       end_message_title: Dishwasher
       end_message: The dishwasher has finished

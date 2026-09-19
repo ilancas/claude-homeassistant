@@ -125,6 +125,7 @@ bedtime:
   - action: script.ds418play_shutdown
     metadata: {}
     data: {}
+    enabled: true
   - delay:
       hours: 0
       minutes: 5
