@@ -13,6 +13,10 @@ LOCAL_CONFIG_PATH ?= config/
 BACKUP_DIR ?= backups
 VENV_PATH ?= venv
 TOOLS_PATH ?= tools
+# UI-editable files checked for changes on HA since the last pull
+STALE_CHECK_FILES = automations.yaml scripts.yaml scenes.yaml
+PULL_SNAPSHOT = .last-pull-checksums
+REMOTE_CHECKSUMS = ssh $(HA_HOST) 'cd $(HA_REMOTE_PATH) && sha256sum $(STALE_CHECK_FILES)'
 
 # Colors for output
 GREEN = \033[0;32m
@@ -20,7 +24,7 @@ YELLOW = \033[1;33m
 RED = \033[0;31m
 NC = \033[0m # No Color
 
-.PHONY: help pull push validate backup clean setup test status entities reload format-yaml check-env
+.PHONY: help pull push validate backup clean setup test status entities reload format-yaml check-env check-stale
 
 # Default target
 help:
@@ -44,20 +48,34 @@ help:
 pull: check-env
 	@echo "$(GREEN)Pulling configuration from Home Assistant...$(NC)"
 	@rsync -avz --delete --exclude-from=.rsync-excludes-pull $(HA_HOST):$(HA_REMOTE_PATH) $(LOCAL_CONFIG_PATH)
+	@$(REMOTE_CHECKSUMS) > $(PULL_SNAPSHOT)
 	@echo "$(GREEN)Configuration pulled successfully!$(NC)"
 	@echo "$(YELLOW)Running validation to ensure integrity...$(NC)"
 	@$(MAKE) validate
 
 # Push configuration to Home Assistant (with pre-validation)
-push: check-env
+push: check-env check-stale
 	@echo "$(GREEN)Validating configuration before push...$(NC)"
 	@$(MAKE) validate
 	@echo "$(GREEN)Validation passed! Pushing to Home Assistant...$(NC)"
 	@rsync -avz --delete --exclude-from=.rsync-excludes-push $(LOCAL_CONFIG_PATH) $(HA_HOST):$(HA_REMOTE_PATH)
+	@$(REMOTE_CHECKSUMS) > $(PULL_SNAPSHOT)
 	@echo "$(GREEN)Configuration pushed successfully!$(NC)"
 	@echo "$(GREEN)Reloading Home Assistant configuration...$(NC)"
 	@. $(VENV_PATH)/bin/activate && python $(TOOLS_PATH)/reload_config.py
 	@echo "$(GREEN)Configuration deployment complete!$(NC)"
+
+# Refuse to push if UI-edited files on HA changed since the last pull (override: FORCE=1)
+check-stale:
+	@if [ "$(FORCE)" = "1" ]; then \
+		echo "$(YELLOW)FORCE=1: skipping stale check$(NC)"; \
+	elif [ ! -f $(PULL_SNAPSHOT) ]; then \
+		echo "$(RED)No record of a previous pull. Run 'make pull' first (or FORCE=1).$(NC)"; exit 1; \
+	elif ! $(REMOTE_CHECKSUMS) | diff -q - $(PULL_SNAPSHOT) >/dev/null; then \
+		echo "$(RED)These files changed on Home Assistant since your last pull:$(NC)"; \
+		$(REMOTE_CHECKSUMS) | diff - $(PULL_SNAPSHOT) | awk '/^</ {print "  " $$3}'; \
+		echo "$(YELLOW)Pushing would overwrite those UI changes. Run 'make pull' first (or FORCE=1).$(NC)"; exit 1; \
+	fi
 
 # Run all validation tests
 validate: check-setup

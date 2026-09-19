@@ -64,6 +64,7 @@ needed, make them manually in the Home Assistant UI:
 ### Before Running `make push`
 1. Validation runs automatically - do not push if validation fails
 2. Only YAML configuration files will be synced (`.storage/` is protected)
+3. Push refuses to run if `automations.yaml`, `scripts.yaml` or `scenes.yaml` changed on HA since the last pull (UI edits). Run `make pull` first; `FORCE=1` overrides
 
 ### After `make push`
 1. Reload the relevant HA components (automations, scenes, scripts)

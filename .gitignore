@@ -135,3 +135,6 @@ coverage.xml
 
 # Virtual Environment symlink (points to ../venv)
 # Note: Both venv/ and venv symlink are ignored above
+
+# Remote checksums recorded by make pull/push (stale-push check)
+.last-pull-checksums
