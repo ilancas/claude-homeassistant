@@ -1577,8 +1577,8 @@
       start_trigger_numeric_entity:
       - sensor.tapo_pm3_fridge_current_consumption
       start_time_delay_state:
-        hours: 0
-        minutes: 30
+        hours: 1
+        minutes: 0
         seconds: 0
       start_below_state: 5
       include_start_notify: enable_start_notify_options
@@ -1678,7 +1678,7 @@
     input:
       start_trigger_state: 'on'
       start_trigger_state_entity:
-      - binary_sensor.garage_door_l_contact
+      - binary_sensor.master_garage_door
       start_time_delay_state:
         hours: 0
         minutes: 30
