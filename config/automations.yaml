@@ -890,7 +890,7 @@
       value_template: '{{ allow_tv or state_attr(sonos_source, "source")  != "TV"
         }}'
     - condition: template
-      value_template: '{{ states(''media_player.samsung_s95ca_55'') not in [''on'',
+      value_template: '{{ states(''media_player.samsung_s95ca_55_3'') not in [''on'',
         ''playing'', ''paused''] }}'
   actions:
   - choose:
@@ -3963,4 +3963,33 @@
     - action: persistent_notification.dismiss
       data:
         notification_id: backup_health_alert
+  mode: single
+- id: '1759650000000'
+  alias: Stop lounge Sonos when TV switches on
+  description: Unjoins Sonos Lounge from any group, then pauses it if still playing.
+  triggers:
+  - trigger: state
+    entity_id: media_player.samsung_s95ca_55_3
+    to: 'on'
+  conditions: []
+  actions:
+  - if:
+    - condition: template
+      value_template: '{{ state_attr(''media_player.sonos_lounge'', ''group_members'')
+        | default([], true) | length > 1 }}'
+    then:
+    - action: media_player.unjoin
+      target:
+        entity_id: media_player.sonos_lounge
+      data: {}
+    - delay:
+        seconds: 2
+  - if:
+    - condition: state
+      entity_id: media_player.sonos_lounge
+      state: playing
+    then:
+    - action: media_player.media_pause
+      target:
+        entity_id: media_player.sonos_lounge
   mode: single
