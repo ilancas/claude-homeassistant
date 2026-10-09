@@ -3404,7 +3404,7 @@
         %}\n  {% set dev_id = device_id(trv) %}\n  {% if dev_id %}\n    {% set select_entity
         = device_entities(dev_id) | select('search', 'temperature_sensor_select')
         | first | default(none) %}\n    {% if select_entity and is_state(select_entity,
-        'internal') %}\n      {% set ns.found = ns.found + [vt.entity_id] %}\n    {%
+        'local_temperature') %}\n      {% set ns.found = ns.found + [vt.entity_id] %}\n    {%
         endif %}\n  {% endif %}\n{% endfor %} {{ ns.found }}"
   - action: notify.mobile_app_pixel_9_pro_xl
     data:
@@ -3434,7 +3434,7 @@
         target:
           entity_id: '{{ select_entity }}'
         data:
-          option: external
+          option: remote_temperature
       - delay: 00:00:01
       - if:
         - condition: template
