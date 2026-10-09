@@ -577,8 +577,7 @@
   - if:
     - condition: state
       entity_id: binary_sensor.master_garage_door
-      state:
-      - 'on'
+      state: 'on'
       for:
         hours: 0
         minutes: 1
@@ -3690,8 +3689,7 @@
       - if:
         - condition: state
           entity_id: input_select.dishwasher_status
-          state:
-          - Finished
+          state: Finished
           for:
             hours: 0
             minutes: 20
